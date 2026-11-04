@@ -98,18 +98,18 @@ export const TransactionsPage: React.FC = () => {
       if (categoryFilter !== 'all' && tx.categoryId !== categoryFilter) return false;
 
       // Account filter
-      if (accountFilter !== 'all' && tx.fromAccountId !== accountFilter && tx.toAccountId !== accountFilter) {
-        return false;
+      if (accountFilter !== 'all') {
+        if (tx.fromAccountId !== accountFilter && tx.toAccountId !== accountFilter) return false;
       }
 
-      // Date range filter
+      // Date Range
       if (startDate && tx.date < startDate) return false;
       if (endDate && tx.date > endDate) return false;
 
       return true;
     }).sort((a, b) => {
-      if (sortBy === 'date-desc') return b.date.localeCompare(a.date);
-      if (sortBy === 'date-asc') return a.date.localeCompare(b.date);
+      if (sortBy === 'date-desc') return b.date.localeCompare(a.date) || (b.time || '').localeCompare(a.time || '');
+      if (sortBy === 'date-asc') return a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '');
       if (sortBy === 'amount-desc') return b.amount - a.amount;
       if (sortBy === 'amount-asc') return a.amount - b.amount;
       return 0;
@@ -127,94 +127,105 @@ export const TransactionsPage: React.FC = () => {
     catMap,
   ]);
 
-  // Export filtered transactions to CSV
   const handleExportCSV = () => {
-    const csv = exportTransactionsCSV(filteredTransactions, categories, accounts);
-    const dateStr = new Date().toISOString().split('T')[0];
-    downloadFile(csv, `smartexpense-transactions-${dateStr}.csv`, 'text/csv');
+    const csvString = exportTransactionsCSV(filteredTransactions, categories, accounts);
+    const filename = `smartexpense_transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadFile(csvString, filename, 'text/csv');
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteCandidate) {
+      await deleteTransaction(deleteCandidate.id);
+      setDeleteCandidate(null);
+    }
   };
 
   return (
-    <div className="space-y-5">
-      {/* Action Bar: Search, Filters, Multi-Add, Receipt Scan, Export */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-        {/* Top Search & Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Search Box */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by merchant, category, notes, or tags..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            <button
-              type="button"
-              onClick={() => setIsReceiptScanOpen(true)}
-              className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 active:scale-95 transition-all cursor-pointer"
-            >
-              <Camera className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="hidden sm:inline">Scan</span>
-              <span>Receipt</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsMultiAddOpen(true)}
-              className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 active:scale-95 transition-all cursor-pointer"
-            >
-              <ListPlus className="w-3.5 h-3.5 text-blue-500" />
-              <span>Multi-Add</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              disabled={filteredTransactions.length === 0}
-              className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Export</span>
-              <span>CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => openAddTxModal()}
-              className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs active:scale-95 transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add</span>
-            </button>
-          </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#202020] dark:text-white tracking-tight">
+            Transactions Ledger
+          </h2>
+          <p className="text-xs sm:text-sm text-[#626262] dark:text-slate-400 mt-0.5">
+            Search, filter, edit, and organize all financial entries
+          </p>
         </div>
 
-        {/* Filters Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-          {/* Type Filter */}
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setIsReceiptScanOpen(true)}
+            className="flex items-center gap-1.5 py-2 px-3 rounded-xl border-[1.5px] border-[#202020] bg-white dark:bg-[#1E1E23] hover:bg-[#F8F5EC] text-xs font-bold text-[#202020] dark:text-white shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+          >
+            <Camera className="w-3.5 h-3.5 text-[#E25C38]" />
+            <span className="hidden sm:inline">Scan</span> Receipt
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsMultiAddOpen(true)}
+            className="flex items-center gap-1.5 py-2 px-3 rounded-xl border-[1.5px] border-[#202020] bg-white dark:bg-[#1E1E23] hover:bg-[#F8F5EC] text-xs font-bold text-[#202020] dark:text-white shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+          >
+            <ListPlus className="w-3.5 h-3.5 text-[#5F3D8C]" />
+            <span className="hidden sm:inline">Batch</span> Add
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 py-2 px-3 rounded-xl border-[1.5px] border-[#202020] bg-white dark:bg-[#1E1E23] hover:bg-[#F8F5EC] text-xs font-bold text-[#202020] dark:text-white shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-[#2B7A49]" />
+            CSV
+          </button>
+
+          <button
+            type="button"
+            onClick={() => openAddTxModal()}
+            className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-[#FFDB8A] hover:bg-[#FFE099] border-2 border-[#202020] text-[#202020] font-bold text-xs sm:text-sm shadow-[2px_2px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>New Entry</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Filter & Search Panel */}
+      <div className="card-retro p-4 sm:p-5 space-y-4">
+        {/* Search Input */}
+        <div className="relative">
+          <Search className="w-4 h-4 text-[#626262] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search transactions by title, category, note, or #tag..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl border-[1.5px] border-[#202020] dark:border-slate-700 bg-white dark:bg-[#1E1E23] text-xs sm:text-sm font-bold text-[#202020] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFDB8A]"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#626262] hover:text-[#202020]"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Filters Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2 border-t-[1.5px] border-[#202020]/10 dark:border-slate-800 text-xs">
           <div>
-            <label className="text-[10px] uppercase font-semibold text-slate-400 block mb-1">
+            <label className="text-[10px] uppercase font-bold text-[#626262] dark:text-slate-400 block mb-1">
               Type
             </label>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as any)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-lg text-xs font-bold text-[#202020] dark:text-white"
             >
               <option value="all">All Types</option>
               <option value="expense">Expenses Only</option>
@@ -223,15 +234,14 @@ export const TransactionsPage: React.FC = () => {
             </select>
           </div>
 
-          {/* Category Filter */}
           <div>
-            <label className="text-[10px] uppercase font-semibold text-slate-400 block mb-1">
+            <label className="text-[10px] uppercase font-bold text-[#626262] dark:text-slate-400 block mb-1">
               Category
             </label>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-lg text-xs font-bold text-[#202020] dark:text-white"
             >
               <option value="all">All Categories</option>
               {categories.map((c) => (
@@ -242,15 +252,14 @@ export const TransactionsPage: React.FC = () => {
             </select>
           </div>
 
-          {/* Account Filter */}
           <div>
-            <label className="text-[10px] uppercase font-semibold text-slate-400 block mb-1">
+            <label className="text-[10px] uppercase font-bold text-[#626262] dark:text-slate-400 block mb-1">
               Account
             </label>
             <select
               value={accountFilter}
               onChange={(e) => setAccountFilter(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-lg text-xs font-bold text-[#202020] dark:text-white"
             >
               <option value="all">All Accounts</option>
               {accounts.map((a) => (
@@ -261,37 +270,35 @@ export const TransactionsPage: React.FC = () => {
             </select>
           </div>
 
-          {/* Date Range Filter */}
           <div>
-            <label className="text-[10px] uppercase font-semibold text-slate-400 block mb-1">
+            <label className="text-[10px] uppercase font-bold text-[#626262] dark:text-slate-400 block mb-1">
               Period
             </label>
             <select
               value={dateRangeFilter}
               onChange={(e) => setDateRangeFilter(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-lg text-xs font-bold text-[#202020] dark:text-white"
             >
               <option value="all">All Time</option>
               <option value="this-month">This Month</option>
               <option value="last-month">Last Month</option>
-              <option value="custom">Custom Date Range</option>
+              <option value="custom">Custom Range</option>
             </select>
           </div>
 
-          {/* Sort By */}
           <div>
-            <label className="text-[10px] uppercase font-semibold text-slate-400 block mb-1">
+            <label className="text-[10px] uppercase font-bold text-[#626262] dark:text-slate-400 block mb-1">
               Sort By
             </label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-lg text-xs font-bold text-[#202020] dark:text-white"
             >
-              <option value="date-desc">Date (Newest First)</option>
-              <option value="date-asc">Date (Oldest First)</option>
-              <option value="amount-desc">Amount (Highest First)</option>
-              <option value="amount-asc">Amount (Lowest First)</option>
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="amount-desc">Highest Amount</option>
+              <option value="amount-asc">Lowest Amount</option>
             </select>
           </div>
         </div>
@@ -300,21 +307,21 @@ export const TransactionsPage: React.FC = () => {
         {dateRangeFilter === 'custom' && (
           <div className="flex items-center gap-3 pt-2">
             <div>
-              <span className="text-[10px] text-slate-400 block">From:</span>
+              <span className="text-[10px] font-bold text-[#626262] block">From:</span>
               <input
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                className="px-2.5 py-1 bg-white dark:bg-[#1E1E23] border border-[#202020] rounded-lg text-xs font-bold"
               />
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 block">To:</span>
+              <span className="text-[10px] font-bold text-[#626262] block">To:</span>
               <input
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                className="px-2.5 py-1 bg-white dark:bg-[#1E1E23] border border-[#202020] rounded-lg text-xs font-bold"
               />
             </div>
           </div>
@@ -322,16 +329,16 @@ export const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Ledger Table / List */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="card-retro overflow-hidden">
         {/* Table Summary Bar */}
-        <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+        <div className="px-5 py-3 border-b-[1.5px] border-[#202020]/10 dark:border-slate-800 flex items-center justify-between text-xs text-[#626262] dark:text-slate-400 font-medium">
           <span>
-            Showing <strong className="text-slate-900 dark:text-white">{filteredTransactions.length}</strong> transactions
+            Showing <strong className="text-[#202020] dark:text-white">{filteredTransactions.length}</strong> entries
           </span>
-          <div className="flex items-center gap-3">
+          <div>
             <span>
-              Net:{' '}
-              <strong className="text-slate-900 dark:text-white">
+              Net Period Flow:{' '}
+              <strong className="text-[#202020] dark:text-white font-serif tabular-nums">
                 {formatMoney(
                   filteredTransactions.reduce((acc, t) => {
                     if (t.type === 'income') return acc + t.amount;
@@ -346,35 +353,39 @@ export const TransactionsPage: React.FC = () => {
         </div>
 
         {filteredTransactions.length > 0 ? (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y-[1.5px] divide-[#202020]/10 dark:divide-slate-800">
             {filteredTransactions.map((tx) => {
               const cat = catMap.get(tx.categoryId);
               const fromAcc = accMap.get(tx.fromAccountId);
               const toAcc = tx.toAccountId ? accMap.get(tx.toAccountId) : null;
+              const isIncome = tx.type === 'income';
+              const isExpense = tx.type === 'expense';
 
               return (
                 <div
                   key={tx.id}
-                  className="p-3.5 sm:px-5 sm:py-4 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group"
+                  className="p-3.5 sm:px-5 sm:py-4 flex items-center justify-between hover:bg-[#FAF7EE]/60 dark:hover:bg-[#25252D]/40 transition-colors group"
                 >
-                  {/* Left: Icon, Details */}
+                  {/* Left: Icon & Details */}
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-2xs"
-                      style={{
-                        backgroundColor:
-                          tx.type === 'transfer' ? '#3B82F6' : cat?.color || '#64748B',
-                      }}
+                      className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border-[1.5px] border-[#202020] flex items-center justify-center flex-shrink-0 shadow-[1px_1px_0px_#202020] ${
+                        isIncome
+                          ? 'bg-[#ADE0BB] text-[#202020]'
+                          : isExpense
+                          ? 'bg-[#FFAB83] text-[#202020]'
+                          : 'bg-[#FFDB8A] text-[#202020]'
+                      }`}
                     >
                       <IconRenderer
-                        name={tx.type === 'transfer' ? 'ArrowRightLeft' : cat?.icon || 'Tag'}
+                        iconName={tx.type === 'transfer' ? 'ArrowRightLeft' : cat?.icon || 'Tag'}
                         className="w-5 h-5"
                       />
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                        <span className="font-bold text-xs sm:text-sm text-[#202020] dark:text-white truncate">
                           {tx.title}
                         </span>
                         {tx.tags && tx.tags.length > 0 && (
@@ -382,7 +393,7 @@ export const TransactionsPage: React.FC = () => {
                             {tx.tags.slice(0, 2).map((tag) => (
                               <span
                                 key={tag}
-                                className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-[#1E1E23] border border-[#202020] text-[#202020]"
                               >
                                 #{tag}
                               </span>
@@ -391,58 +402,58 @@ export const TransactionsPage: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                      <div className="text-[11px] font-medium text-[#626262] dark:text-slate-400 flex items-center gap-2 mt-0.5">
                         <span>{tx.date}</span>
-                        {tx.time && <span>{tx.time}</span>}
-                        <span>•</span>
+                        {tx.time && <span>· {tx.time}</span>}
+                        <span>·</span>
                         <span className="truncate">
                           {tx.type === 'transfer'
                             ? `${fromAcc?.name} → ${toAcc?.name}`
                             : fromAcc?.name || 'Account'}
                         </span>
-                        <span>•</span>
+                        <span>·</span>
                         <span className="capitalize">{tx.paymentMethod || tx.type}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Amount & Actions */}
+                  {/* Right: Amount & Action Buttons */}
                   <div className="flex items-center gap-3 pl-3 flex-shrink-0">
                     <div className="text-right">
                       <div
-                        className={`font-bold text-xs sm:text-base ${
-                          tx.type === 'income'
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : tx.type === 'expense'
-                            ? 'text-slate-900 dark:text-white'
+                        className={`font-serif text-base sm:text-lg font-bold tabular-nums ${
+                          isIncome
+                            ? 'text-[#2B7A49] dark:text-[#7BD39A]'
+                            : isExpense
+                            ? 'text-[#202020] dark:text-white'
                             : 'text-blue-600 dark:text-blue-400'
                         }`}
                       >
-                        {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
+                        {isIncome ? '+' : isExpense ? '-' : ''}
                         {formatMoney(tx.amount, currency)}
                       </div>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider">
                         {tx.type === 'transfer' ? 'Transfer' : cat?.name || 'Expense'}
                       </span>
                     </div>
 
-                    {/* Edit & Delete Actions (always visible on touch, hover on desktop) */}
-                    <div className="flex items-center gap-1 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    {/* Edit & Delete Actions */}
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => setEditTx(tx)}
                         title="Edit Transaction"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        className="p-1.5 rounded-xl border border-[#202020] bg-white dark:bg-[#1E1E23] text-[#202020] dark:text-white hover:bg-[#F8F5EC] shadow-[1px_1px_0px_#202020] cursor-pointer"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeleteCandidate(tx)}
                         title="Delete Transaction"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        className="p-1.5 rounded-xl border border-[#202020] bg-white dark:bg-[#1E1E23] text-rose-600 hover:bg-rose-50 shadow-[1px_1px_0px_#202020] cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -452,11 +463,11 @@ export const TransactionsPage: React.FC = () => {
           </div>
         ) : (
           <div className="py-16 text-center">
-            <Calendar className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <Calendar className="w-10 h-10 text-[#626262]/40 mx-auto mb-2" />
+            <h3 className="text-sm font-bold text-[#202020] dark:text-white">
               No transactions found
             </h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+            <p className="text-xs text-[#626262] dark:text-slate-400 mt-1 max-w-xs mx-auto">
               No entries match your current search or filter criteria.
             </p>
           </div>
@@ -478,37 +489,21 @@ export const TransactionsPage: React.FC = () => {
         onClose={() => setIsMultiAddOpen(false)}
       />
 
-      {/* Receipt Scan Modal */}
+      {/* AI Receipt Scan Modal */}
       <ReceiptScanModal
         isOpen={isReceiptScanOpen}
         onClose={() => setIsReceiptScanOpen(false)}
-        onPopulateTransaction={(data) => {
-          openAddTxModal({
-            title: data.title,
-            amount: data.amount,
-            date: data.date,
-            categoryId: data.categoryId,
-            notes: data.notes,
-          });
-        }}
       />
 
-      {/* Confirm Deletion Dialog */}
+      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
-        isOpen={!!deleteCandidate}
-        onClose={() => setDeleteCandidate(null)}
-        onConfirm={() => {
-          if (deleteCandidate) {
-            deleteTransaction(deleteCandidate.id);
-          }
-        }}
-        title="Delete Transaction?"
-        message={`Are you sure you want to delete "${deleteCandidate?.title}" (${formatMoney(
-          deleteCandidate?.amount || 0,
-          currency
-        )})? Your account balances and reports will be recalculated immediately.`}
-        confirmText="Delete Transaction"
-        confirmVariant="danger"
+        isOpen={Boolean(deleteCandidate)}
+        title="Delete Transaction"
+        message={`Are you sure you want to delete "${deleteCandidate?.title}" (${formatMoney(deleteCandidate?.amount || 0, currency)})? This will update your account balances accordingly.`}
+        confirmLabel="Delete"
+        isDestructive
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteCandidate(null)}
       />
     </div>
   );

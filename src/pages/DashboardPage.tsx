@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
+import { useAuth } from '../context/AuthContext';
 import { formatMoney, fromMinorUnits, type Transaction, type Category, type Account } from '../types/finance';
 import { IconRenderer } from '../components/common/IconRenderer';
 import { TransactionModal } from '../components/modals/TransactionModal';
@@ -18,7 +19,9 @@ import {
   Sparkles,
   AlertTriangle,
   Calendar,
-  CheckCircle2,
+  Settings,
+  Users,
+  CreditCard,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -27,14 +30,12 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  PieChart,
-  Pie,
   Cell,
-  Legend,
 } from 'recharts';
 import { Link } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
+  const { user, profile } = useAuth();
   const {
     netWorth,
     currentMonthTotals,
@@ -45,583 +46,540 @@ export const DashboardPage: React.FC = () => {
     settings,
     openAddTxModal,
     deterministicInsights,
-    aiHealth,
+    splitBalances,
   } = useFinance();
 
   const [selectedTxForEdit, setSelectedTxForEdit] = useState<Transaction | null>(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
-  const [chartView, setChartView] = useState<'monthly' | 'yearly'>('monthly');
+  const [chartMetric, setChartMetric] = useState<'earning' | 'expense'>('expense');
+  const [chartPeriod, setChartPeriod] = useState<'weekly' | 'monthly'>('monthly');
 
   const currency = settings.currency;
   const catMap = React.useMemo(() => new Map<string, Category>(categories.map((c: Category) => [c.id, c])), [categories]);
   const accMap = React.useMemo(() => new Map<string, Account>(accounts.map((a: Account) => [a.id, a])), [accounts]);
 
-  // Monthly Budget remaining calculation
+  // Greeting Name
+  const greetingName = profile?.displayName || user?.email?.split('@')[0] || 'Friend';
+
+  // Recent 5 transactions
+  const recentTransactions = transactions.slice(0, 5);
+
+  // Vertical Bar Chart Data (Weekly vs Monthly)
+  const chartData = React.useMemo(() => {
+    if (chartPeriod === 'weekly') {
+      // Last 7 days
+      const days: Array<{ label: string; dateStr: string; amount: number; color: string }> = [];
+      const pastelColors = ['#FFAB83', '#ADE0BB', '#FFDB8A', '#CFB0E8', '#A9B9F5', '#F1B5E3', '#FFDB8A'];
+      const today = new Date();
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
+        days.push({ label: dayLabel, dateStr, amount: 0, color: pastelColors[6 - i] });
+      }
+
+      for (const tx of transactions) {
+        if (chartMetric === 'expense' && tx.type !== 'expense') continue;
+        if (chartMetric === 'earning' && tx.type !== 'income') continue;
+
+        const found = days.find((day) => day.dateStr === tx.date);
+        if (found) {
+          found.amount += fromMinorUnits(tx.amount);
+        }
+      }
+      return days;
+    } else {
+      // Last 6 months
+      const months: Array<{ label: string; monthStr: string; amount: number; color: string }> = [];
+      const pastelColors = ['#FFAB83', '#ADE0BB', '#FFDB8A', '#CFB0E8', '#A9B9F5', '#F1B5E3'];
+      const today = new Date();
+
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleDateString('en-US', { month: 'short' });
+        months.push({ label, monthStr, amount: 0, color: pastelColors[5 - i] });
+      }
+
+      for (const tx of transactions) {
+        if (chartMetric === 'expense' && tx.type !== 'expense') continue;
+        if (chartMetric === 'earning' && tx.type !== 'income') continue;
+
+        const txMonth = tx.date.substring(0, 7);
+        const found = months.find((m) => m.monthStr === txMonth);
+        if (found) {
+          found.amount += fromMinorUnits(tx.amount);
+        }
+      }
+      return months;
+    }
+  }, [transactions, chartMetric, chartPeriod]);
+
+  // Overall budget left
   const totalBudget = budgetStatuses.find((b) => b.budget.categoryId === 'all');
   const totalBudgetLimit = totalBudget?.limitAmount || 0;
   const totalBudgetSpent = totalBudget?.spentAmount || currentMonthTotals.totalExpense;
   const totalBudgetRemaining = totalBudgetLimit > 0 ? totalBudgetLimit - totalBudgetSpent : 0;
 
-  // Recent 6 transactions
-  const recentTransactions = transactions.slice(0, 6);
-
-  // Income vs Expense Chart Data
-  // Group transactions by month for the last 6 months
-  const monthlyChartData = React.useMemo(() => {
-    const monthsMap = new Map<string, { month: string; income: number; expense: number }>();
-    const today = new Date();
-
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = d.toLocaleDateString('en-US', { month: 'short' });
-      monthsMap.set(key, { month: label, income: 0, expense: 0 });
-    }
-
-    for (const tx of transactions) {
-      const txMonth = tx.date.substring(0, 7);
-      if (monthsMap.has(txMonth)) {
-        const item = monthsMap.get(txMonth)!;
-        if (tx.type === 'income') {
-          item.income += fromMinorUnits(tx.amount);
-        } else if (tx.type === 'expense') {
-          item.expense += fromMinorUnits(tx.amount);
-        }
-      }
-    }
-
-    return Array.from(monthsMap.values());
-  }, [transactions]);
-
-  // Expense Distribution Data (Current Month)
-  const expensePieData = React.useMemo(() => {
-    const today = new Date();
-    const curMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-    const monthExpenses = transactions.filter(
-      (tx) => tx.type === 'expense' && tx.date.startsWith(curMonthStr) && tx.categoryId
-    );
-
-    const catTotals = new Map<string, number>();
-    for (const tx of monthExpenses) {
-      const cur = catTotals.get(tx.categoryId) || 0;
-      catTotals.set(tx.categoryId, cur + tx.amount);
-    }
-
-    const data: Array<{ name: string; value: number; color: string }> = [];
-    catTotals.forEach((minorAmt, catId) => {
-      const cat = catMap.get(catId);
-      if (cat) {
-        data.push({
-          name: cat.name,
-          value: fromMinorUnits(minorAmt),
-          color: cat.color,
-        });
-      }
-    });
-
-    return data.sort((a, b) => b.value - a.value).slice(0, 6);
-  }, [transactions, catMap]);
-
   return (
     <div className="space-y-6">
-      {/* 1. Top Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        {/* Total Balance / Net Worth */}
-        <div className="col-span-2 sm:col-span-1 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Balance</span>
-            <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
-              <Wallet className="w-4 h-4" />
-            </div>
+      {/* 1. Greeting & Current Date Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#202020] dark:text-white tracking-tight">
+            Hi, {greetingName}
+          </h2>
+          <p className="text-xs sm:text-sm font-medium text-[#626262] dark:text-slate-400 mt-0.5">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Link
+            to="/settings"
+            title="Settings"
+            className="p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 shadow-[1.5px_1.5px_0px_#202020] text-[#202020] dark:text-white hover:bg-[#F8F5EC] transition-all"
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+
+      {/* 2. Top Hero: Current Balance Card (Directly inspired by Murad Hossain reference) */}
+      <div className="card-yellow p-5 sm:p-7 relative overflow-hidden">
+        {/* Card Header */}
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#202020]">
+            Current Balance
+          </span>
+          <Link
+            to="/accounts"
+            className="p-1.5 rounded-xl bg-white/70 hover:bg-white border border-[#202020] text-[#202020] transition-colors"
+            title="Manage Accounts & Wallets"
+          >
+            <Settings className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Large Editorial Serif Balance */}
+        <div className="mb-6">
+          <div className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#202020] tabular-nums">
+            {formatMoney(netWorth, currency)}
           </div>
-          <div>
-            <div
-              className={`text-xl sm:text-2xl font-bold tracking-tight ${
-                netWorth >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-600'
-              }`}
-            >
-              {formatMoney(netWorth, currency)}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Across all active accounts</div>
+          <div className="text-xs font-semibold text-[#202020]/75 mt-1 flex items-center gap-1.5">
+            <span>Across {accounts.filter((a) => !a.isArchived).length} accounts</span>
+            <span>·</span>
+            <span>Savings Rate: {currentMonthTotals.savingsRate}%</span>
           </div>
         </div>
 
-        {/* Total Income */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Income</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <ArrowDownLeft className="w-4 h-4" />
+        {/* Action Buttons inside Card (Murad Hossain Transfer / Request pattern) */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setIsTransferModalOpen(true)}
+            className="py-2.5 px-2 sm:px-3 rounded-xl bg-white hover:bg-[#F8F5EC] border-[1.5px] border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none font-bold text-xs sm:text-sm text-[#202020] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5 text-[#202020]" />
+            <span>Transfer</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => openAddTxModal({ type: 'expense' })}
+            className="py-2.5 px-2 sm:px-3 rounded-xl bg-white hover:bg-[#F8F5EC] border-[1.5px] border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none font-bold text-xs sm:text-sm text-[#202020] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#E25C38]" />
+            <span>Add Expense</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => openAddTxModal({ type: 'income' })}
+            className="py-2.5 px-2 sm:px-3 rounded-xl bg-white hover:bg-[#F8F5EC] border-[1.5px] border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none font-bold text-xs sm:text-sm text-[#202020] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <ArrowDownLeft className="w-3.5 h-3.5 text-[#2B7A49]" />
+            <span>Add Income</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Pastel Overview Cards: Income, Expense, Net Savings, Split Receivables */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Income Card (Pastel Mint) */}
+        <div className="card-mint p-4 sm:p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Income</span>
+            <div className="w-7 h-7 rounded-lg bg-white border border-[#202020] text-[#202020] flex items-center justify-center">
+              <ArrowDownLeft className="w-4 h-4 text-[#2B7A49]" />
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+            <div className="font-serif text-xl sm:text-2xl font-bold tracking-tight tabular-nums">
               {formatMoney(currentMonthTotals.totalIncome, currency)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">This Month</div>
+            <div className="text-[11px] font-medium opacity-80 mt-0.5">This Month</div>
           </div>
         </div>
 
-        {/* Total Expenses */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Expenses</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-              <ArrowUpRight className="w-4 h-4" />
+        {/* Expense Card (Pastel Peach) */}
+        <div className="card-peach p-4 sm:p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Expenses</span>
+            <div className="w-7 h-7 rounded-lg bg-white border border-[#202020] text-[#202020] flex items-center justify-center">
+              <ArrowUpRight className="w-4 h-4 text-[#E25C38]" />
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400">
+            <div className="font-serif text-xl sm:text-2xl font-bold tracking-tight tabular-nums">
               {formatMoney(currentMonthTotals.totalExpense, currency)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">This Month</div>
+            <div className="text-[11px] font-medium opacity-80 mt-0.5">This Month</div>
           </div>
         </div>
 
-        {/* Net Savings */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Net Savings</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <PiggyBank className="w-4 h-4" />
+        {/* Net Savings (Pastel Lavender) */}
+        <div className="card-lavender p-4 sm:p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Net Savings</span>
+            <div className="w-7 h-7 rounded-lg bg-white border border-[#202020] text-[#202020] flex items-center justify-center">
+              <PiggyBank className="w-4 h-4 text-[#5F3D8C]" />
             </div>
           </div>
           <div>
-            <div
-              className={`text-xl sm:text-2xl font-bold tracking-tight ${
-                currentMonthTotals.netSavings >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-600'
-              }`}
-            >
+            <div className="font-serif text-xl sm:text-2xl font-bold tracking-tight tabular-nums">
               {formatMoney(currentMonthTotals.netSavings, currency)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              Rate: <span className="font-semibold text-emerald-600">{currentMonthTotals.savingsRate}%</span>
+            <div className="text-[11px] font-medium opacity-80 mt-0.5">
+              Saved {currentMonthTotals.savingsRate}%
             </div>
           </div>
         </div>
 
-        {/* Monthly Budget Remaining */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Budget Left</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <PieIcon className="w-4 h-4" />
+        {/* Roommate Splits / Budget Left (Pastel Sky Blue / White) */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#A9B9F5] dark:bg-[#34406E] border-[1.5px] border-[#202020] dark:border-slate-700 shadow-[2.5px_2.5px_0px_#202020] text-[#202020] dark:text-[#E8EDFD] flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Splits Receivable</span>
+            <div className="w-7 h-7 rounded-lg bg-white border border-[#202020] text-[#202020] flex items-center justify-center">
+              <Users className="w-4 h-4 text-[#2B4E99]" />
             </div>
           </div>
           <div>
-            <div
-              className={`text-xl sm:text-2xl font-bold tracking-tight ${
-                totalBudgetRemaining >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-600'
-              }`}
-            >
-              {totalBudgetLimit > 0
-                ? formatMoney(totalBudgetRemaining, currency)
-                : 'No Limit Set'}
+            <div className="font-serif text-xl sm:text-2xl font-bold tracking-tight tabular-nums">
+              {formatMoney(splitBalances.owedToUser, currency)}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              {totalBudgetLimit > 0
-                ? `${Math.round((totalBudgetSpent / totalBudgetLimit) * 100)}% used`
-                : 'Click Budgets to set'}
+            <div className="text-[11px] font-medium opacity-85 mt-0.5">
+              {splitBalances.activeSplitsCount} active group splits
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Quick Actions Toolbar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <button
-          type="button"
-          onClick={() => openAddTxModal({ type: 'expense' })}
-          className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs whitespace-nowrap active:scale-95 transition-all"
-        >
-          <div className="w-2 h-2 rounded-full bg-rose-500" />
-          <span>Add Expense</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => openAddTxModal({ type: 'income' })}
-          className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs whitespace-nowrap active:scale-95 transition-all"
-        >
-          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span>Add Income</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setIsTransferModalOpen(true)}
-          className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs whitespace-nowrap active:scale-95 transition-all"
-        >
-          <ArrowRightLeft className="w-3.5 h-3.5 text-blue-500" />
-          <span>Transfer Money</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setIsBudgetModalOpen(true)}
-          className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs whitespace-nowrap active:scale-95 transition-all"
-        >
-          <PieIcon className="w-3.5 h-3.5 text-amber-500" />
-          <span>Create Budget</span>
-        </button>
-
-        <Link
-          to="/ai-assistant"
-          className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold text-emerald-700 dark:text-emerald-300 shadow-2xs whitespace-nowrap active:scale-95 transition-all ml-auto"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>Ask Gemini AI</span>
-        </Link>
-      </div>
-
-      {/* 3. Deterministic Smart Insights Banner */}
-      {deterministicInsights.length > 0 && (
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5" />
+      {/* 4. Middle Section: Spending & Earning Chart + Category Breakdown (12-col grid) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+        {/* Main Spending / Earning Bar Chart (7 cols on desktop) */}
+        <div className="lg:col-span-7 card-retro p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            {/* Top Controls: Segmented Earning / Expense + Period Selector */}
+            <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+              {/* Earning vs Expense Segmented Control (Murad Hossain reference) */}
+              <div className="flex items-center p-1 rounded-xl bg-[#F6F4EB] dark:bg-[#18181D] border-[1.5px] border-[#202020] dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setChartMetric('earning')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    chartMetric === 'earning'
+                      ? 'bg-[#ADE0BB] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
+                      : 'text-[#626262] dark:text-slate-400 hover:text-[#202020]'
+                  }`}
+                >
+                  Earning
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartMetric('expense')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    chartMetric === 'expense'
+                      ? 'bg-[#FFAB83] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
+                      : 'text-[#626262] dark:text-slate-400 hover:text-[#202020]'
+                  }`}
+                >
+                  Expense
+                </button>
               </div>
-              <h2 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                Automated Financial Insights
-              </h2>
+
+              {/* Weekly vs Monthly Period */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setChartPeriod('weekly')}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg border border-[#202020] transition-all cursor-pointer ${
+                    chartPeriod === 'weekly'
+                      ? 'bg-white dark:bg-[#25252D] text-[#202020] dark:text-white shadow-[1px_1px_0px_#202020]'
+                      : 'bg-transparent text-[#626262] dark:text-slate-400'
+                  }`}
+                >
+                  Weekly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartPeriod('monthly')}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg border border-[#202020] transition-all cursor-pointer ${
+                    chartPeriod === 'monthly'
+                      ? 'bg-white dark:bg-[#25252D] text-[#202020] dark:text-white shadow-[1px_1px_0px_#202020]'
+                      : 'bg-transparent text-[#626262] dark:text-slate-400'
+                  }`}
+                >
+                  Monthly
+                </button>
+              </div>
             </div>
-            <Link
-              to="/ai-assistant"
-              className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-            >
-              <span>Explore AI Insights</span>
-              <ChevronRight className="w-3 h-3" />
+
+            {/* Vertical Bar Chart matching the reference */}
+            <div className="h-60 sm:h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                  <XAxis
+                    dataKey="label"
+                    stroke="#888"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={{ stroke: '#202020', strokeWidth: 1 }}
+                  />
+                  <YAxis
+                    stroke="#888"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => `${currency === 'INR' ? '₹' : '$'}${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const val = payload[0].value as number;
+                        return (
+                          <div className="p-2.5 rounded-xl bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] text-xs font-bold">
+                            <span className="text-[#626262] dark:text-slate-400">{payload[0].payload.label}: </span>
+                            <span className="text-[#202020] dark:text-white font-serif">{currency === 'INR' ? '₹' : '$'}{val.toLocaleString()}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="amount" radius={[8, 8, 0, 0]}>
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        stroke="#202020"
+                        strokeWidth={1.5}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Bottom tag indicators below bars (like Murad Hossain reference) */}
+          <div className="pt-3 border-t-[1.5px] border-[#202020]/10 dark:border-slate-800 flex items-center justify-between text-xs text-[#626262] dark:text-slate-400 font-medium">
+            <span>Period Average: <strong className="text-[#202020] dark:text-white">{currency === 'INR' ? '₹' : '$'}{(chartData.reduce((acc, c) => acc + c.amount, 0) / (chartData.length || 1)).toFixed(0)}</strong></span>
+            <Link to="/analytics" className="font-bold text-[#202020] dark:text-white hover:underline flex items-center gap-1">
+              Detailed Analytics <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {deterministicInsights.slice(0, 3).map((insight) => (
-              <div
-                key={insight.id}
-                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-750 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    {insight.type === 'warning' ? (
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                    ) : insight.type === 'positive' ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    ) : (
-                      <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
-                    )}
-                    <span className="font-semibold text-xs text-slate-900 dark:text-white">
-                      {insight.title}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {insight.message}
-                  </p>
-                </div>
-                {insight.actionRoute && insight.actionText && (
-                  <Link
-                    to={insight.actionRoute}
-                    className="mt-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-                  >
-                    <span>{insight.actionText}</span>
-                    <ChevronRight className="w-3 h-3" />
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
         </div>
-      )}
 
-      {/* 4. Charts Workspace: Income vs Expense & Donut Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Income vs Expense Bar Chart */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Income vs Expenses
-              </h2>
-              <p className="text-xs text-slate-400">Monthly cash flow trajectory</p>
-            </div>
-            <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold">
-              <span className="px-2.5 py-1 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs">
-                Last 6 Months
+        {/* AI Insight & Active Budget Status (5 cols on desktop) */}
+        <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
+          {/* AI Financial Copilot Insight Card */}
+          <div className="card-lavender p-5 relative overflow-hidden flex-1">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#202020] flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4" />
+                AI Financial Insight
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-[#202020] text-[#202020]">
+                Gemini
               </span>
             </div>
-          </div>
-
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <XAxis dataKey="month" stroke="#94A3B8" fontSize={12} tickLine={false} />
-                <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1E293B',
-                    borderRadius: '12px',
-                    border: 'none',
-                    color: '#fff',
-                    fontSize: '12px',
-                  }}
-                  formatter={(value: any) => [`${settings.currency} ${Number(value).toFixed(0)}`]}
-                />
-                <Bar dataKey="income" name="Income" fill="#10B981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" name="Expense" fill="#F43F5E" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Expense Distribution Donut Chart */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Expense Distribution
-              </h2>
-              <p className="text-xs text-slate-400">Current month top categories</p>
-            </div>
+            <p className="text-sm font-medium text-[#202020] leading-relaxed mb-4">
+              {deterministicInsights[0] ||
+                `You've recorded ${transactions.length} transactions this cycle. Your largest spending category is active and well-balanced against your monthly budget.`}
+            </p>
             <Link
-              to="/analytics"
-              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+              to="/ai-assistant"
+              className="inline-flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-white hover:bg-[#F8F5EC] border-[1.5px] border-[#202020] shadow-[1.5px_1.5px_0px_#202020] text-xs font-bold text-[#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
             >
-              View Full
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Ask AI Copilot</span>
             </Link>
           </div>
 
-          {expensePieData.length > 0 ? (
-            <>
-              <div className="h-44 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={expensePieData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={75}
-                      paddingAngle={3}
-                    >
-                      {expensePieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(val: any) => [`${settings.currency} ${Number(val).toFixed(0)}`]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="space-y-1.5 mt-2">
-                {expensePieData.slice(0, 4).map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-slate-600 dark:text-slate-400 truncate max-w-[120px]">
-                        {item.name}
-                      </span>
-                    </div>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {settings.currency} {item.value.toFixed(0)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="h-56 flex flex-col items-center justify-center text-center p-4">
-              <PieIcon className="w-10 h-10 text-slate-300 dark:text-slate-700 mb-2" />
-              <p className="text-xs text-slate-400">No expenses recorded for this month yet.</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 5. Lower Section: Budget Overview & Recent Transactions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Budget Progress Overview */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Monthly Budgets
-              </h2>
-              <p className="text-xs text-slate-400">Category spending limits</p>
-            </div>
-            <Link
-              to="/budgets"
-              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-            >
-              <span>Manage</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {budgetStatuses.length > 0 ? (
-            <div className="space-y-3.5">
-              {budgetStatuses.slice(0, 4).map((b) => (
-                <div key={b.budget.id} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[140px]">
-                      {b.categoryName}
-                    </span>
-                    <span
-                      className={`font-semibold ${
-                        b.state === 'exceeded'
-                          ? 'text-rose-600'
-                          : b.state === 'warning'
-                          ? 'text-amber-600'
-                          : 'text-slate-600 dark:text-slate-400'
-                      }`}
-                    >
-                      {formatMoney(b.spentAmount, currency)} / {formatMoney(b.limitAmount, currency)}
-                    </span>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        b.state === 'exceeded'
-                          ? 'bg-rose-500'
-                          : b.state === 'warning'
-                          ? 'bg-amber-500'
-                          : b.state === 'approaching'
-                          ? 'bg-blue-500'
-                          : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${Math.min(100, b.percentageUsed)}%` }}
-                    />
-                  </div>
+          {/* Budget Health Meter Card */}
+          <div className="card-retro p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400">
+                  Monthly Budget
+                </span>
+                <div className="font-serif text-lg font-bold text-[#202020] dark:text-white tabular-nums">
+                  {totalBudgetLimit > 0 ? formatMoney(totalBudgetRemaining, currency) : 'No Cap Configured'}
+                  {totalBudgetLimit > 0 && <span className="text-xs font-sans font-normal text-[#626262] ml-1">left</span>}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-8 text-center">
-              <PieIcon className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-              <p className="text-xs text-slate-400 mb-3">No active budgets for this month.</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsBudgetModalOpen(true)}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold"
+                className="p-1.5 rounded-xl border border-[#202020] bg-white dark:bg-[#25252D] text-[#202020] dark:text-white hover:bg-[#F8F5EC]"
+                title="Configure Budget"
               >
-                Set First Budget
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
-          )}
-        </div>
 
-        {/* Recent Transactions List */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Recent Transactions
-              </h2>
-              <p className="text-xs text-slate-400">Latest recorded financial entries</p>
-            </div>
-            <Link
-              to="/transactions"
-              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-            >
-              <span>View All</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {recentTransactions.length > 0 ? (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
-              {recentTransactions.map((tx) => {
-                const cat = catMap.get(tx.categoryId);
-                const fromAcc = accMap.get(tx.fromAccountId);
-                const toAcc = tx.toAccountId ? accMap.get(tx.toAccountId) : null;
-
-                return (
+            {totalBudgetLimit > 0 ? (
+              <div className="space-y-1.5">
+                <div className="w-full h-3 rounded-full border-[1.5px] border-[#202020] bg-[#F6F4EB] dark:bg-[#18181D] overflow-hidden p-[1px]">
                   <div
-                    key={tx.id}
-                    onClick={() => setSelectedTxForEdit(tx)}
-                    className="py-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-xl px-2 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0"
-                        style={{
-                          backgroundColor:
-                            tx.type === 'transfer' ? '#3B82F6' : cat?.color || '#64748B',
-                        }}
-                      >
-                        <IconRenderer
-                          name={tx.type === 'transfer' ? 'ArrowRightLeft' : cat?.icon || 'Tag'}
-                          className="w-4 h-4"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
-                          {tx.title}
-                        </div>
-                        <div className="text-[11px] text-slate-400 flex items-center gap-2">
-                          <span>{tx.date}</span>
-                          <span>•</span>
-                          <span className="truncate">
-                            {tx.type === 'transfer'
-                              ? `${fromAcc?.name} → ${toAcc?.name}`
-                              : fromAcc?.name || 'Account'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right flex-shrink-0 pl-3">
-                      <div
-                        className={`font-bold text-xs sm:text-sm ${
-                          tx.type === 'income'
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : tx.type === 'expense'
-                            ? 'text-slate-900 dark:text-white'
-                            : 'text-blue-600 dark:text-blue-400'
-                        }`}
-                      >
-                        {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
-                        {formatMoney(tx.amount, currency)}
-                      </div>
-                      <span className="text-[10px] text-slate-400 capitalize">
-                        {tx.paymentMethod || tx.type}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="py-12 text-center">
-              <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-              <p className="text-xs text-slate-400">No transactions recorded yet.</p>
-            </div>
-          )}
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      totalBudgetSpent > totalBudgetLimit
+                        ? 'bg-[#FFAB83]'
+                        : (totalBudgetSpent / totalBudgetLimit) > 0.8
+                        ? 'bg-[#FFDB8A]'
+                        : 'bg-[#ADE0BB]'
+                    }`}
+                    style={{ width: `${Math.min(100, (totalBudgetSpent / totalBudgetLimit) * 100)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] font-medium text-[#626262] dark:text-slate-400">
+                  <span>Spent: {formatMoney(totalBudgetSpent, currency)}</span>
+                  <span>Limit: {formatMoney(totalBudgetLimit, currency)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-[#626262] dark:text-slate-400">
+                Set a monthly spending limit to protect your savings and get early alerts.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Edit Transaction Modal */}
-      {selectedTxForEdit && (
-        <TransactionModal
-          isOpen={!!selectedTxForEdit}
-          onClose={() => setSelectedTxForEdit(null)}
-          editTransaction={selectedTxForEdit}
-        />
-      )}
+      {/* 5. Recent Transactions Section (Directly inspired by Murad Hossain reference) */}
+      <div className="card-retro p-5 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#202020] dark:text-white tracking-tight">
+              Recent Transactions
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/transactions"
+              className="py-1.5 px-3 rounded-xl border-[1.5px] border-[#202020] dark:border-slate-700 bg-white dark:bg-[#25252D] hover:bg-[#F8F5EC] dark:hover:bg-[#2A2A33] text-xs font-bold text-[#202020] dark:text-white shadow-[1.5px_1.5px_0px_#202020] transition-all"
+            >
+              View All
+            </Link>
+          </div>
+        </div>
 
-      {/* Transfer Modal */}
+        {/* Transactions List */}
+        {recentTransactions.length > 0 ? (
+          <div className="divide-y-[1.5px] divide-[#202020]/10 dark:divide-slate-800">
+            {recentTransactions.map((tx) => {
+              const category = catMap.get(tx.categoryId);
+              const account = accMap.get(tx.fromAccountId);
+              const isIncome = tx.type === 'income';
+              const isExpense = tx.type === 'expense';
+
+              return (
+                <div
+                  key={tx.id}
+                  onClick={() => setSelectedTxForEdit(tx)}
+                  className="py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-[#FAF7EE]/60 dark:hover:bg-[#25252D]/40 -mx-2 px-2 rounded-xl transition-colors cursor-pointer"
+                >
+                  {/* Left: Category Icon in pastel rounded box */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border-[1.5px] border-[#202020] flex items-center justify-center flex-shrink-0 shadow-[1px_1px_0px_#202020] ${
+                        isIncome
+                          ? 'bg-[#ADE0BB] text-[#202020]'
+                          : isExpense
+                          ? 'bg-[#FFAB83] text-[#202020]'
+                          : 'bg-[#FFDB8A] text-[#202020]'
+                      }`}
+                    >
+                      <IconRenderer
+                        iconName={category?.icon || (isIncome ? 'ArrowDownLeft' : isExpense ? 'ArrowUpRight' : 'ArrowRightLeft')}
+                        className="w-5 h-5"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-[#202020] dark:text-white truncate">
+                        {tx.title}
+                      </div>
+                      <div className="text-[11px] font-medium text-[#626262] dark:text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                        <span>{tx.date}</span>
+                        {tx.time && <span>· {tx.time}</span>}
+                        {account && <span>· {account.name}</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Amount with + or - */}
+                  <div className="text-right flex-shrink-0">
+                    <div
+                      className={`font-serif text-base sm:text-lg font-bold tabular-nums ${
+                        isIncome
+                          ? 'text-[#2B7A49] dark:text-[#7BD39A]'
+                          : isExpense
+                          ? 'text-[#202020] dark:text-white'
+                          : 'text-blue-600 dark:text-blue-400'
+                      }`}
+                    >
+                      {isIncome ? '+' : isExpense ? '-' : ''}
+                      {formatMoney(tx.amount, currency)}
+                    </div>
+                    <div className="text-[10px] font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider">
+                      {category?.name || tx.type}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-sm font-medium text-[#626262] dark:text-slate-400">
+              No transactions recorded yet.
+            </p>
+            <button
+              type="button"
+              onClick={() => openAddTxModal()}
+              className="mt-3 py-2 px-4 rounded-xl bg-[#FFDB8A] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] font-bold text-xs text-[#202020] cursor-pointer"
+            >
+              Add First Transaction
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      <TransactionModal
+        isOpen={Boolean(selectedTxForEdit)}
+        onClose={() => setSelectedTxForEdit(null)}
+        editTransaction={selectedTxForEdit}
+      />
       <TransferModal
         isOpen={isTransferModalOpen}
         onClose={() => setIsTransferModalOpen(false)}
       />
-
-      {/* Budget Modal */}
       <BudgetModal
         isOpen={isBudgetModalOpen}
         onClose={() => setIsBudgetModalOpen(false)}

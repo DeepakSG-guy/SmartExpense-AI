@@ -60,11 +60,6 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErrorMessage('Please enter a valid email address.');
-      return;
-    }
-
     if (!isPasswordValid) {
       setErrorMessage('Password must be at least 8 characters and contain both letters and numbers.');
       return;
@@ -77,59 +72,59 @@ export const RegisterPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const { error, user } = await signUp(email, password, fullName);
+      const { error } = await signUp(email, password, fullName.trim());
       if (error) {
         setErrorMessage(error.message || 'Failed to create account.');
       } else {
         setIsSuccess(true);
         showToast({
           type: 'success',
-          message: 'Account created! Please check your email to confirm your address, or sign in.',
+          message: 'Account created! Please check your email to verify.',
         });
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'An error occurred during registration.');
+      setErrorMessage(err.message || 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-900 dark:text-slate-100 transition-colors">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen bg-[#FBF9F2] dark:bg-[#141416] flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-[#202020] dark:text-[#F5F5F7] transition-colors">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
         <div className="flex justify-center">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-600/30">
+            <div className="w-11 h-11 rounded-2xl bg-[#FFDB8A] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] flex items-center justify-center text-[#202020]">
               <Zap className="w-6 h-6 fill-current" />
             </div>
             <div>
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
+              <span className="font-serif font-bold text-2xl tracking-tight text-[#202020] dark:text-white flex items-center gap-1.5">
                 SmartExpense{' '}
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-sans font-bold text-[#202020] bg-[#CFB0E8] px-2 py-0.5 rounded-lg border border-[#202020]">
                   AI
                 </span>
               </span>
-              <p className="text-[11px] text-slate-400">Account Registration</p>
+              <p className="text-[11px] font-medium text-[#626262] dark:text-slate-400">Personal Wealth Copilot</p>
             </div>
           </Link>
         </div>
 
-        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Create your account
+        <h2 className="mt-6 text-center font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#202020] dark:text-white">
+          Create Your Account
         </h2>
-        <p className="mt-1 text-center text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-center text-xs text-[#626262] dark:text-slate-400">
           Start syncing your finances securely to the cloud with Supabase
         </p>
       </div>
 
       <div className="mt-7 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="bg-white dark:bg-slate-900 py-8 px-5 sm:px-10 shadow-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl space-y-6">
+        <div className="card-retro py-8 px-5 sm:px-8 space-y-6">
           {!isConfigured && (
-            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
+            <div className="p-3.5 rounded-2xl bg-[#FFDB8A]/40 border-[1.5px] border-[#202020] text-xs text-[#202020] font-bold flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#202020]" />
               <div>
-                <strong>Supabase Not Configured:</strong> Cloud accounts require a valid Supabase project. You can provide credentials in{' '}
-                <Link to="/settings" className="underline font-semibold hover:text-amber-900">
+                <strong>Supabase Not Configured:</strong> Cloud accounts require credentials in{' '}
+                <Link to="/settings" className="underline font-bold">
                   Settings
                 </Link>.
               </div>
@@ -137,20 +132,20 @@ export const RegisterPage: React.FC = () => {
           )}
 
           {isSuccess ? (
-            <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-3 text-center">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-6 h-6" />
+            <div className="p-5 rounded-2xl bg-[#ADE0BB]/30 border-[1.5px] border-[#202020] space-y-3 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-[#ADE0BB] border-[1.5px] border-[#202020] text-[#202020] flex items-center justify-center mx-auto shadow-[1.5px_1.5px_0px_#202020]">
+                <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
               </div>
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+              <h3 className="font-serif font-bold text-lg text-[#202020] dark:text-white">
                 Registration Successful!
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-xs text-[#626262] dark:text-slate-300 leading-relaxed font-medium">
                 We sent a verification link to <strong>{email}</strong>. Once confirmed, you can log in to sync and back up your finances.
               </p>
               <div className="pt-2">
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs"
+                  className="inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-[#FFDB8A] hover:bg-[#FFE099] border-2 border-[#202020] text-[#202020] font-bold text-xs shadow-[2px_2px_0px_#202020]"
                 >
                   <span>Proceed to Sign In</span>
                   <ArrowRight className="w-4 h-4" />
@@ -160,8 +155,8 @@ export const RegisterPage: React.FC = () => {
           ) : (
             <>
               {errorMessage && (
-                <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-500" />
+                <div className="p-3.5 rounded-2xl bg-[#FFAB83]/40 border-[1.5px] border-[#202020] text-xs font-bold text-[#202020] flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#202020]" />
                   <span>{errorMessage}</span>
                 </div>
               )}
@@ -172,7 +167,7 @@ export const RegisterPage: React.FC = () => {
                   type="button"
                   disabled={isGoogleLoading || !isConfigured}
                   onClick={handleGoogleSignIn}
-                  className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 font-semibold text-sm shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-[1.5px] border-[#202020] bg-white dark:bg-[#1E1E23] hover:bg-[#F8F5EC] text-[#202020] dark:text-white font-bold text-xs sm:text-sm shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50 cursor-pointer"
                 >
                   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -187,10 +182,10 @@ export const RegisterPage: React.FC = () => {
               {/* Divider */}
               <div className="relative my-3">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                  <div className="w-full border-t-[1.5px] border-[#202020]/15 dark:border-slate-800" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-slate-900 px-3 text-slate-400 font-semibold tracking-wider text-[11px]">
+                  <span className="bg-white dark:bg-[#1E1E23] px-3 text-[#626262] font-bold text-[10px]">
                     Or register with email
                   </span>
                 </div>
@@ -198,91 +193,76 @@ export const RegisterPage: React.FC = () => {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <User className="w-4 h-4 text-[#626262] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       required
                       placeholder="e.g. Alex Carter"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none focus:ring-2 focus:ring-[#FFDB8A]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-[#626262] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       required
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none focus:ring-2 focus:ring-[#FFDB8A]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-[#626262] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
-                      placeholder="At least 8 characters with letters & numbers"
+                      placeholder="Min 8 characters, letters & numbers"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none focus:ring-2 focus:ring-[#FFDB8A]"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#626262] hover:text-[#202020]"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  {password && (
-                    <div className="mt-1.5 flex items-center gap-3 text-[11px] text-slate-400">
-                      <span className={isLengthValid ? 'text-emerald-600 font-medium' : ''}>
-                        8+ chars
-                      </span>
-                      <span>•</span>
-                      <span className={hasLetter ? 'text-emerald-600 font-medium' : ''}>
-                        Letters
-                      </span>
-                      <span>•</span>
-                      <span className={hasNumber ? 'text-emerald-600 font-medium' : ''}>
-                        Numbers
-                      </span>
-                    </div>
-                  )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
                     Confirm Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-[#626262] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
                       placeholder="Re-enter password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none focus:ring-2 focus:ring-[#FFDB8A]"
                     />
                   </div>
                 </div>
@@ -290,31 +270,31 @@ export const RegisterPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isLoading || !isConfigured}
-                  className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#FFDB8A] hover:bg-[#FFE099] border-2 border-[#202020] text-[#202020] font-bold text-sm shadow-[2.5px_2.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50 cursor-pointer"
                 >
                   <span>{isLoading ? 'Creating Account...' : 'Sign Up'}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                 </button>
               </form>
+
+              <div className="pt-4 border-t-[1.5px] border-[#202020]/15 dark:border-slate-800 text-center">
+                <p className="text-xs font-medium text-[#626262] dark:text-slate-400">
+                  Already have an account?{' '}
+                  <Link
+                    to="/login"
+                    className="font-bold text-[#202020] dark:text-white hover:underline"
+                  >
+                    Sign In
+                  </Link>
+                </p>
+              </div>
             </>
           )}
-
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
-              >
-                Sign In
-              </Link>
-            </p>
-          </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-slate-400 text-center">
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          <span>Zero Plain-Text Passwords. Stored via bcrypt on Supabase Auth.</span>
+        <div className="mt-6 flex items-center justify-center gap-1.5 text-xs font-medium text-[#626262] dark:text-slate-400 text-center">
+          <ShieldCheck className="w-4 h-4 text-[#2B7A49]" />
+          <span>Protected with PostgreSQL Row Level Security (RLS)</span>
         </div>
       </div>
     </div>
