@@ -70,7 +70,7 @@ export const AIAssistantPage: React.FC = () => {
     scrollToBottom();
   }, [messages, isThinking]);
 
-  // Grounded context
+  // Construct factual grounded financial context
   const buildFactualContext = () => {
     const today = new Date();
     const curMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
@@ -98,93 +98,115 @@ export const AIAssistantPage: React.FC = () => {
         limit: formatMoney(b.limitAmount, currency),
         status: b.state,
       })),
+      spendingForecast: {
+        projectedMonthEnd: formatMoney(spendingForecast.projectedMonthEndExpense, currency),
+        dailyPace: formatMoney(spendingForecast.currentPace, currency),
+        confidence: spendingForecast.forecastConfidence,
+      },
+      totalActiveAccounts: accounts.filter((a) => !a.isArchived).length,
     };
   };
 
-  const handleSendMessage = async (promptToSend?: string) => {
-    const text = (promptToSend || inputPrompt).trim();
-    if (!text || isThinking) return;
+  const handleSendMessage = async (textToSend?: string) => {
+    const prompt = (textToSend || inputPrompt).trim();
+    if (!prompt) return;
 
-    setInputPrompt('');
     setChatError('');
-
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: text,
+      content: prompt,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
     setMessages((prev) => [...prev, userMsg]);
+    setInputPrompt('');
     setIsThinking(true);
 
     try {
-      const groundedContext = buildFactualContext();
-      const responseText = await aiService.chatWithAssistant(text, groundedContext);
+      const factualContext = buildFactualContext();
+      const history = messages.slice(-4).map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
 
-      const assistantMsg: ChatMessage = {
-        id: `ai-${Date.now()}`,
+      const reply = await aiService.askFinancialChat(prompt, factualContext, history);
+
+      const botMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
         role: 'assistant',
-        content: responseText,
+        content: reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      setMessages((prev) => [...prev, botMsg]);
     } catch (err: any) {
-      console.error('Chat error:', err);
-      setChatError(err.message || 'Failed to receive AI response. Falling back to offline advice.');
+      setChatError(
+        err.message ||
+          'AI Assistant request failed. Ensure backend server is running with GEMINI_API_KEY.'
+      );
     } finally {
       setIsThinking(false);
     }
   };
 
+  // Test Categorization Playground
   const handleTestCategorize = async () => {
     if (!testDesc.trim()) return;
     setIsCategorizing(true);
     setCategorizerResult(null);
 
-    try {
-      const res = await aiService.categorizeTransaction(testDesc, categories);
-      setCategorizerResult(res);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsCategorizing(false);
-    }
+    const amt = parseFloat(testAmount) || 0;
+    const res = await aiService.suggestCategory(testDesc, amt, 'expense', categories);
+    setCategorizerResult(res);
+    setIsCategorizing(false);
   };
 
   const quickPrompts = [
-    'How is my savings rate this month?',
-    'Which category am I spending the most on?',
-    'Am I close to exceeding any of my budgets?',
-    'What is my projected month-end spend?',
+    'What are my biggest expenses this month?',
+    'How much did I save this month and what is my savings rate?',
+    'Am I on track with my category budgets?',
+    'What can I do to reduce my non-essential spending?',
   ];
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#202020] dark:text-white tracking-tight flex items-center gap-2">
-            <span>AI Financial Assistant</span>
-            <span className="text-[10px] font-sans font-bold text-[#202020] bg-[#CFB0E8] px-2 py-0.5 rounded-lg border border-[#202020] uppercase tracking-wider">
-              Gemini Powered
-            </span>
-          </h2>
-          <p className="text-xs sm:text-sm text-[#626262] dark:text-slate-400 mt-0.5">
-            Grounded financial intelligence, projection modeling, and automated categorization
-          </p>
+      {/* Top AI Status Banner */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+            <Bot className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                Gemini Financial Intelligence
+              </h2>
+              <span
+                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                  aiHealth.hasGeminiKey
+                    ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300'
+                }`}
+              >
+                {aiHealth.hasGeminiKey ? 'Gemini 3.8 Connected' : 'Local Fallback'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Grounded exclusively in your computed IndexedDB financial balances and budgets.
+            </p>
+          </div>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex items-center p-1 rounded-2xl bg-[#F6F4EB] dark:bg-[#18181D] border-[1.5px] border-[#202020] dark:border-slate-700 text-xs font-bold w-full sm:w-auto">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setActiveTab('chat')}
-            className={`flex-1 sm:flex-none py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none py-1.5 px-3 rounded-lg transition-all ${
               activeTab === 'chat'
-                ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
-                : 'text-[#626262] dark:text-slate-400 hover:text-[#202020]'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                : 'text-slate-500'
             }`}
           >
             Financial Chat
@@ -192,10 +214,10 @@ export const AIAssistantPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('forecast')}
-            className={`flex-1 sm:flex-none py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none py-1.5 px-3 rounded-lg transition-all ${
               activeTab === 'forecast'
-                ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
-                : 'text-[#626262] dark:text-slate-400 hover:text-[#202020]'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                : 'text-slate-500'
             }`}
           >
             Spending Forecast
@@ -203,10 +225,10 @@ export const AIAssistantPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('categorizer')}
-            className={`flex-1 sm:flex-none py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none py-1.5 px-3 rounded-lg transition-all ${
               activeTab === 'categorizer'
-                ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
-                : 'text-[#626262] dark:text-slate-400 hover:text-[#202020]'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                : 'text-slate-500'
             }`}
           >
             Smart Categorizer
@@ -216,17 +238,17 @@ export const AIAssistantPage: React.FC = () => {
 
       {/* Warning if backend key is missing */}
       {!aiHealth.hasGeminiKey && (
-        <div className="p-3.5 rounded-2xl bg-[#FFDB8A]/40 border-[1.5px] border-[#202020] text-xs text-[#202020] font-bold flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#202020]" />
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
           <div>
-            <strong>Gemini Server Key:</strong> The server backend is currently operating without a configured GEMINI_API_KEY. All your expense tracking, deterministic insights, and offline rules remain 100% operational.
+            <strong>Gemini Server Unavailable:</strong> The server backend is running without a GEMINI_API_KEY. All your expense tracking, deterministic insights, and local rule categorizations remain 100% operational.
           </div>
         </div>
       )}
 
       {/* TAB 1: Financial Chat */}
       {activeTab === 'chat' && (
-        <div className="card-retro p-5 sm:p-6 flex flex-col h-[600px]">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col h-[600px]">
           {/* Messages container */}
           <div className="flex-1 overflow-y-auto space-y-4 pr-1">
             {messages.map((msg) => (
@@ -237,22 +259,26 @@ export const AIAssistantPage: React.FC = () => {
                 }`}
               >
                 <div
-                  className={`w-9 h-9 rounded-2xl border-[1.5px] border-[#202020] flex items-center justify-center flex-shrink-0 text-[#202020] shadow-[1px_1px_0px_#202020] ${
-                    msg.role === 'user' ? 'bg-[#FFDB8A]' : 'bg-[#CFB0E8]'
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white ${
+                    msg.role === 'user' ? 'bg-slate-800 dark:bg-slate-700' : 'bg-emerald-600'
                   }`}
                 >
                   {msg.role === 'user' ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
                 </div>
 
                 <div
-                  className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] ${
+                  className={`p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-[#FFDB8A] text-[#202020] rounded-tr-none'
-                      : 'bg-white dark:bg-[#1E1E23] text-[#202020] dark:text-slate-100 rounded-tl-none'
+                      ? 'bg-emerald-600 text-white rounded-tr-none'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-750'
                   }`}
                 >
-                  <p className="whitespace-pre-line font-medium">{msg.content}</p>
-                  <span className="block text-[10px] font-bold text-[#626262] dark:text-slate-400 mt-1 text-right">
+                  <p className="whitespace-pre-line">{msg.content}</p>
+                  <span
+                    className={`block text-[10px] mt-1 text-right ${
+                      msg.role === 'user' ? 'text-emerald-100' : 'text-slate-400'
+                    }`}
+                  >
                     {msg.timestamp}
                   </span>
                 </div>
@@ -260,14 +286,14 @@ export const AIAssistantPage: React.FC = () => {
             ))}
 
             {isThinking && (
-              <div className="flex items-center gap-2 text-xs font-bold text-[#626262] dark:text-slate-400 py-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#CFB0E8] border border-[#202020] animate-ping" />
-                <span>Computing grounded financial advice...</span>
+              <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span>SmartExpense AI is computing grounded financial response...</span>
               </div>
             )}
 
             {chatError && (
-              <div className="p-3 rounded-xl bg-[#FFAB83]/40 border-[1.5px] border-[#202020] text-xs font-bold text-[#202020]">
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs border border-rose-200">
                 {chatError}
               </div>
             )}
@@ -276,13 +302,13 @@ export const AIAssistantPage: React.FC = () => {
           </div>
 
           {/* Quick Prompts */}
-          <div className="pt-3 pb-2 flex items-center gap-1.5 overflow-x-auto scrollbar-none border-t-[1.5px] border-[#202020]/10 dark:border-slate-800">
+          <div className="pt-3 pb-2 flex items-center gap-1.5 overflow-x-auto scrollbar-none border-t border-slate-100 dark:border-slate-800">
             {quickPrompts.map((q, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handleSendMessage(q)}
-                className="py-1 px-3 rounded-xl bg-white dark:bg-[#1E1E23] hover:bg-[#F8F5EC] border border-[#202020] text-[11px] font-bold text-[#202020] dark:text-white shadow-[1px_1px_0px_#202020] whitespace-nowrap active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+                className="py-1 px-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-[11px] font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap active:scale-95 transition-all cursor-pointer"
               >
                 {q}
               </button>
@@ -302,136 +328,146 @@ export const AIAssistantPage: React.FC = () => {
               placeholder="Ask about your expenses, budgets, savings, or spending trends..."
               value={inputPrompt}
               onChange={(e) => setInputPrompt(e.target.value)}
-              className="flex-1 px-4 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none focus:ring-2 focus:ring-[#FFDB8A]"
+              className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
             <button
               type="submit"
               disabled={isThinking || !inputPrompt.trim()}
-              className="py-2.5 px-4 rounded-xl bg-[#FFDB8A] hover:bg-[#FFE099] border-2 border-[#202020] text-[#202020] font-bold text-xs sm:text-sm shadow-[2px_2px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-40 cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm shadow-xs transition-all disabled:opacity-40 cursor-pointer"
             >
-              <Send className="w-4 h-4 stroke-[2.5]" />
+              <Send className="w-4 h-4" />
             </button>
           </form>
         </div>
       )}
 
-      {/* TAB 2: Spending Forecast */}
+      {/* TAB 2: Transparent Spending Forecast */}
       {activeTab === 'forecast' && (
-        <div className="card-retro p-5 sm:p-6 space-y-5">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
           <div>
-            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#202020] dark:text-white flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-[#202020] dark:text-white" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-emerald-500" />
               <span>Month-End Expense Trajectory & Forecast</span>
             </h3>
-            <p className="text-xs text-[#626262] dark:text-slate-400 mt-1">
-              Deterministic mathematical projection combining actual historical run-rate with scheduled recurring payments
+            <p className="text-xs text-slate-400 mt-1">
+              Transparent, deterministic financial extrapolation based on elapsed days, daily run-rate, and upcoming scheduled recurring obligations.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020]">
-              <span className="text-[10px] uppercase font-bold text-[#626262] dark:text-slate-400 tracking-wider">
-                Current Actual Spend
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] uppercase font-semibold text-slate-400">
+                Projected Total Expense
               </span>
-              <div className="font-serif text-2xl font-bold text-[#202020] dark:text-white mt-1 tabular-nums">
-                {formatMoney(spendingForecast.actualSpentSoFar, currency)}
+              <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+                {formatMoney(spendingForecast.projectedMonthEndExpense, currency)}
               </div>
-              <p className="text-[11px] text-[#626262] dark:text-slate-400 mt-0.5">
-                Recorded through today
-              </p>
+              <span className="text-[11px] text-slate-400">By end of current month</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#FFDB8A] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] text-[#202020]">
-              <span className="text-[10px] uppercase font-bold tracking-wider">
-                Projected Total Outflow
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] uppercase font-semibold text-slate-400">
+                Current Daily Burn Rate
               </span>
-              <div className="font-serif text-2xl font-bold mt-1 tabular-nums">
-                {formatMoney(spendingForecast.projectedMonthTotal, currency)}
+              <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+                {formatMoney(spendingForecast.currentPace, currency)}
               </div>
-              <p className="text-[11px] font-medium opacity-80 mt-0.5">
-                Trajectory confidence: {spendingForecast.confidence}
-              </p>
+              <span className="text-[11px] text-slate-400">
+                Across {spendingForecast.daysElapsed} days elapsed
+              </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#ADE0BB] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] text-[#202020]">
-              <span className="text-[10px] uppercase font-bold tracking-wider">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] uppercase font-semibold text-slate-400">
                 Upcoming Recurring Bills
               </span>
-              <div className="font-serif text-2xl font-bold mt-1 tabular-nums">
-                {formatMoney(spendingForecast.expectedRecurringRemaining, currency)}
+              <div className="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">
+                {formatMoney(spendingForecast.recurringCommitmentsRemaining, currency)}
               </div>
-              <p className="text-[11px] font-medium opacity-80 mt-0.5">
-                Scheduled before month closes
-              </p>
+              <span className="text-[11px] text-slate-400">
+                Due in next {spendingForecast.daysRemaining} days
+              </span>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-[#FAF7EE] dark:bg-[#18181D] border-[1.5px] border-[#202020] dark:border-slate-700 text-xs text-[#202020] dark:text-slate-200 space-y-2">
-            <h4 className="font-bold">Transparent Mathematical Methodology:</h4>
-            <p>
-              Daily run-rate = current spend divided by elapsed month days ({formatMoney(spendingForecast.dailyRunRate, currency)}/day).
-              Projected end-of-month spend = Current Spend + (Daily Run-rate × {spendingForecast.daysRemaining} days remaining) + Scheduled Recurring Payments.
+          <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+              <span>Forecast Mathematical Assumptions:</span>
+              <span className="capitalize px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-[10px]">
+                {spendingForecast.forecastConfidence} Confidence
+              </span>
+            </div>
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              {spendingForecast.summaryText}
             </p>
           </div>
         </div>
       )}
 
-      {/* TAB 3: Smart Categorizer */}
+      {/* TAB 3: Smart Categorizer Playground */}
       {activeTab === 'categorizer' && (
-        <div className="card-retro p-5 sm:p-6 space-y-5">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
           <div>
-            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#202020] dark:text-white flex items-center gap-2">
-              <Bot className="w-5 h-5 text-[#202020] dark:text-white" />
-              <span>Smart Transaction Categorizer Testbed</span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-emerald-500" />
+              <span>Intelligent Categorization Playground</span>
             </h3>
-            <p className="text-xs text-[#626262] dark:text-slate-400 mt-1">
-              Test how the offline regex engine and Gemini AI auto-classify descriptions like "Swiggy biryani", "Uber ride", or "Hostel Wi-Fi"
+            <p className="text-xs text-slate-400 mt-1">
+              Test how SmartExpense AI maps real-world descriptions (e.g. Swiggy, Uber, D-Mart, Electricity) to your expense categories.
             </p>
           </div>
 
-          <div className="space-y-3 max-w-md">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
-                Transaction Memo / Narration
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2">
+              <label className="text-xs font-semibold text-slate-400 uppercase block mb-1">
+                Description / Merchant
               </label>
               <input
                 type="text"
-                placeholder="e.g. Swiggy order, Hostel mess fee, Uber cab to airport"
+                placeholder="e.g. Starbucks cold brew, Blinkit grocery, BESCOM electricity"
                 value={testDesc}
                 onChange={(e) => setTestDesc(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-[#202020] dark:border-slate-700 bg-white dark:bg-[#1E1E23] text-sm font-bold text-[#202020] dark:text-white"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-xl text-sm"
               />
             </div>
-
-            <button
-              type="button"
-              disabled={isCategorizing || !testDesc.trim()}
-              onClick={handleTestCategorize}
-              className="py-2.5 px-4 rounded-xl bg-[#FFDB8A] hover:bg-[#FFE099] border-2 border-[#202020] text-[#202020] font-bold text-xs sm:text-sm shadow-[2px_2px_0px_#202020] transition-all cursor-pointer disabled:opacity-50"
-            >
-              {isCategorizing ? 'Categorizing...' : 'Predict Category'}
-            </button>
+            <div>
+              <label className="text-xs font-semibold text-slate-400 uppercase block mb-1">
+                Amount ({currency})
+              </label>
+              <input
+                type="number"
+                value={testAmount}
+                onChange={(e) => setTestAmount(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-xl text-sm"
+              />
+            </div>
           </div>
 
+          <button
+            type="button"
+            disabled={isCategorizing || !testDesc.trim()}
+            onClick={handleTestCategorize}
+            className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition-all disabled:opacity-40 cursor-pointer flex items-center gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>{isCategorizing ? 'Classifying...' : 'Predict Category'}</span>
+          </button>
+
           {categorizerResult && (
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] space-y-2 max-w-md">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#626262] uppercase">Predicted Category:</span>
-                <span className="text-sm font-bold text-[#202020] dark:text-white bg-[#ADE0BB] px-2.5 py-0.5 rounded-lg border border-[#202020]">
-                  {categorizerResult.name}
+                <span className="text-slate-400 uppercase text-[10px]">Predicted Category</span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  Source: {categorizerResult.source}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-[#626262]">Confidence Score:</span>
-                <span className="font-bold text-[#202020] dark:text-white">
-                  {Math.round(categorizerResult.confidence * 100)}%
-                </span>
+              <div className="text-lg font-bold text-slate-900 dark:text-white">
+                {categorizerResult.category}
               </div>
-              {categorizerResult.explanation && (
-                <div className="text-xs text-[#626262] dark:text-slate-400 pt-1 border-t border-[#202020]/10">
-                  {categorizerResult.explanation}
-                </div>
-              )}
+              <p className="text-slate-500">
+                Confidence: {(categorizerResult.confidence * 100).toFixed(0)}% •{' '}
+                {categorizerResult.explanation || 'Matched dictionary'}
+              </p>
             </div>
           )}
         </div>

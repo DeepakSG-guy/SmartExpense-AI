@@ -100,39 +100,40 @@ export const AnalyticsPage: React.FC = () => {
     return transactions.filter((t) => t.date >= startDate && t.date <= endDate);
   }, [transactions, startDate, endDate]);
 
-  // Financial totals for the period
-  const totals = useMemo(() => {
-    return calculateTotals(periodTransactions);
-  }, [periodTransactions]);
+  const totals = useMemo(() => calculateTotals(periodTransactions), [periodTransactions]);
 
   // Category breakdown
   const categoryBreakdown = useMemo(() => {
-    return calculateCategoryBreakdown(periodTransactions, categories);
+    return calculateCategoryBreakdown(periodTransactions, categories, 'expense');
   }, [periodTransactions, categories]);
 
-  // Health Metrics
+  // Financial Health Metrics
   const healthMetrics = useMemo(() => {
-    const daysDiff = Math.max(
+    const days = Math.max(
       1,
-      Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
+      Math.round(
+        (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+      ) + 1
     );
-    const avgDailySpend = Math.round(totals.totalExpense / daysDiff);
+    const avgDailySpend = Math.round(totals.totalExpense / days);
 
     // Budget utilization
-    const activeBudgets = budgetStatuses.filter((b) => b.budget.categoryId !== 'all');
-    const totalBudgetCap = activeBudgets.reduce((acc, b) => acc + b.limitAmount, 0);
-    const totalBudgetSpent = activeBudgets.reduce((acc, b) => acc + b.spentAmount, 0);
-    const budgetUtilization = totalBudgetCap > 0 ? Math.round((totalBudgetSpent / totalBudgetCap) * 100) : 0;
+    const totalBudgetLimit = budgetStatuses.reduce((acc, b) => acc + b.limitAmount, 0);
+    const totalBudgetSpent = budgetStatuses.reduce((acc, b) => acc + b.spentAmount, 0);
+    const budgetUtilization = totalBudgetLimit > 0 ? Math.round((totalBudgetSpent / totalBudgetLimit) * 100) : 0;
 
-    // Previous period comparison for MoM / period-over-period spend
-    const prevStart = new Date(new Date(startDate).getTime() - daysDiff * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0];
-    const prevTxs = transactions.filter((t) => t.date >= prevStart && t.date < startDate && t.type === 'expense');
-    const prevTotalExpense = prevTxs.reduce((acc, t) => acc + t.amount, 0);
+    // Previous period expense for MoM change
+    const periodDurationMs = new Date(endDate).getTime() - new Date(startDate).getTime();
+    const prevPeriodEnd = new Date(new Date(startDate).getTime() - 1000 * 60 * 60 * 24);
+    const prevPeriodStart = new Date(prevPeriodEnd.getTime() - periodDurationMs);
+    const prevStartStr = prevPeriodStart.toISOString().split('T')[0];
+    const prevEndStr = prevPeriodEnd.toISOString().split('T')[0];
+
+    const prevTxs = transactions.filter((t) => t.date >= prevStartStr && t.date <= prevEndStr);
+    const prevTotals = calculateTotals(prevTxs);
     const momChange =
-      prevTotalExpense > 0
-        ? Math.round(((totals.totalExpense - prevTotalExpense) / prevTotalExpense) * 100)
+      prevTotals.totalExpense > 0
+        ? Math.round(((totals.totalExpense - prevTotals.totalExpense) / prevTotals.totalExpense) * 100)
         : 0;
 
     return {
@@ -143,17 +144,17 @@ export const AnalyticsPage: React.FC = () => {
     };
   }, [totals, startDate, endDate, budgetStatuses, transactions]);
 
-  // Trend Chart Data (daily / weekly / monthly)
+  // Trend Chart Data (Daily / Weekly / Monthly)
   const trendData = useMemo(() => {
     const expenseTxs = periodTransactions.filter((t) => t.type === 'expense');
 
     if (trendView === 'daily') {
-      const dayMap = new Map<string, number>();
+      const dailyMap = new Map<string, number>();
       for (const tx of expenseTxs) {
-        const cur = dayMap.get(tx.date) || 0;
-        dayMap.set(tx.date, cur + fromMinorUnits(tx.amount));
+        const cur = dailyMap.get(tx.date) || 0;
+        dailyMap.set(tx.date, cur + fromMinorUnits(tx.amount));
       }
-      return Array.from(dayMap.entries())
+      return Array.from(dailyMap.entries())
         .sort((a, b) => a[0].localeCompare(b[0]))
         .map(([date, amount]) => ({
           label: date.substring(5), // MM-DD
@@ -162,9 +163,9 @@ export const AnalyticsPage: React.FC = () => {
     } else if (trendView === 'monthly') {
       const monthMap = new Map<string, number>();
       for (const tx of expenseTxs) {
-        const m = tx.date.substring(0, 7);
-        const cur = monthMap.get(m) || 0;
-        monthMap.set(m, cur + fromMinorUnits(tx.amount));
+        const monthKey = tx.date.substring(0, 7);
+        const cur = monthMap.get(monthKey) || 0;
+        monthMap.set(monthKey, cur + fromMinorUnits(tx.amount));
       }
       return Array.from(monthMap.entries())
         .sort((a, b) => a[0].localeCompare(b[0]))
@@ -173,7 +174,7 @@ export const AnalyticsPage: React.FC = () => {
           amount,
         }));
     } else {
-      // Weekly aggregation
+      // Weekly view
       const weekMap = new Map<string, number>();
       for (const tx of expenseTxs) {
         const d = new Date(tx.date);
@@ -217,6 +218,20 @@ export const AnalyticsPage: React.FC = () => {
     return { topBySpend, topByFrequency };
   }, [periodTransactions]);
 
+  // Calendar Heatmap: 31 days expense intensity
+  const heatmapData = useMemo(() => {
+    const dayTotals = new Map<string, number>();
+    for (const tx of periodTransactions) {
+      if (tx.type === 'expense') {
+        const cur = dayTotals.get(tx.date) || 0;
+        dayTotals.set(tx.date, cur + tx.amount);
+      }
+    }
+
+    const maxSpend = Math.max(1, ...Array.from(dayTotals.values()));
+    return { dayTotals, maxSpend };
+  }, [periodTransactions]);
+
   const handlePrint = () => {
     window.print();
   };
@@ -226,6 +241,7 @@ export const AnalyticsPage: React.FC = () => {
       setIsGeneratingPdf(true);
       showToast({ type: 'info', message: 'Generating financial audit PDF report...' });
 
+      // Small tick to let toast render
       await new Promise((r) => setTimeout(r, 80));
 
       generateFinancialReportPDF({
@@ -252,18 +268,16 @@ export const AnalyticsPage: React.FC = () => {
     }
   };
 
-  const pastelColors = ['#FFDB8A', '#FFAB83', '#ADE0BB', '#CFB0E8', '#A9B9F5', '#F1B5E3', '#FFE099'];
-
   return (
     <div className="space-y-6 print:space-y-4">
       {/* Top Header & Period Selector (Hidden in print) */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 print:hidden">
         <div>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#202020] dark:text-white tracking-tight">
-            Analytics & Reports
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            Financial Analytics & Reports
           </h2>
-          <p className="text-xs sm:text-sm text-[#626262] dark:text-slate-400 mt-0.5">
-            Audit spending patterns, health metrics, and merchant trends
+          <p className="text-xs text-slate-400">
+            Comprehensive audit of spending patterns, health metrics, and merchants
           </p>
         </div>
 
@@ -271,7 +285,7 @@ export const AnalyticsPage: React.FC = () => {
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as any)}
-            className="px-3.5 py-2 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-[#202020] dark:text-white shadow-[1.5px_1.5px_0px_#202020]"
+            className="px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="this-month">This Month</option>
             <option value="last-month">Last Month</option>
@@ -285,121 +299,129 @@ export const AnalyticsPage: React.FC = () => {
             type="button"
             disabled={isGeneratingPdf}
             onClick={handleDownloadPdf}
-            className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-[#FFDB8A] hover:bg-[#FFE099] border-2 border-[#202020] text-[#202020] text-xs sm:text-sm font-bold shadow-[2px_2px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-xs active:scale-95 transition-all cursor-pointer disabled:opacity-50"
           >
-            <Download className="w-4 h-4 stroke-[2.5]" />
+            <Download className="w-4 h-4" />
             <span>{isGeneratingPdf ? 'Exporting...' : 'Download PDF'}</span>
           </button>
 
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl border-[1.5px] border-[#202020] bg-white dark:bg-[#1E1E23] hover:bg-[#F8F5EC] text-xs sm:text-sm font-bold text-[#202020] dark:text-white shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+            className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 active:scale-95 transition-all cursor-pointer"
           >
-            <Printer className="w-4 h-4" />
-            <span>Print</span>
+            <Printer className="w-4 h-4 text-slate-500" />
+            <span>Print Report</span>
           </button>
         </div>
       </div>
 
       {/* Custom date range bar */}
       {period === 'custom' && (
-        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 shadow-[1.5px_1.5px_0px_#202020] text-xs font-bold print:hidden">
-          <Calendar className="w-4 h-4 text-[#202020]" />
-          <span className="text-[#626262]">Date Range:</span>
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs print:hidden">
+          <Calendar className="w-4 h-4 text-emerald-500" />
+          <span className="text-slate-500">Date Range:</span>
           <input
             type="date"
             value={customStart}
             onChange={(e) => setCustomStart(e.target.value)}
-            className="px-2.5 py-1 bg-white dark:bg-[#1E1E23] border border-[#202020] rounded-lg text-xs font-bold"
+            className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border rounded-lg text-xs"
           />
-          <span className="text-[#626262]">to</span>
+          <span className="text-slate-400">to</span>
           <input
             type="date"
             value={customEnd}
             onChange={(e) => setCustomEnd(e.target.value)}
-            className="px-2.5 py-1 bg-white dark:bg-[#1E1E23] border border-[#202020] rounded-lg text-xs font-bold"
+            className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border rounded-lg text-xs"
           />
         </div>
       )}
 
-      {/* Print Report Header */}
+      {/* Print Report Header (Visible only when printing) */}
       <div className="hidden print:block pb-4 border-b border-slate-300">
-        <h1 className="text-2xl font-bold font-serif">SmartExpense AI — Financial Report</h1>
+        <h1 className="text-2xl font-bold">SmartExpense AI — Financial Report</h1>
         <p className="text-sm text-slate-600">
           Period: {periodLabel} ({startDate} to {endDate}) • Exported on{' '}
           {new Date().toLocaleDateString()}
         </p>
       </div>
 
-      {/* 1. Health Metrics Cards in Soft Pastels */}
+      {/* 1. Health Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="card-mint p-4 sm:p-5 flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold tracking-wider">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
             Savings Rate
           </span>
-          <div className="font-serif text-2xl sm:text-3xl font-bold tracking-tight mt-1 tabular-nums">
+          <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
             {healthMetrics.savingsRate}%
           </div>
-          <p className="text-[11px] font-medium opacity-80 mt-0.5">
-            Saved {formatMoney(totals.netSavings, currency)}
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Saved {formatMoney(totals.netSavings, currency)} of {formatMoney(totals.totalIncome, currency)}
           </p>
         </div>
 
-        <div className="card-peach p-4 sm:p-5 flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold tracking-wider">
-            Avg Daily Spend
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+            Avg Daily Spending
           </span>
-          <div className="font-serif text-2xl sm:text-3xl font-bold tracking-tight mt-1 tabular-nums">
+          <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
             {formatMoney(healthMetrics.avgDailySpend, currency)}
           </div>
-          <p className="text-[11px] font-medium opacity-80 mt-0.5">Daily outflow run-rate</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Daily outflow run-rate</p>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#A9B9F5] dark:bg-[#34406E] border-[1.5px] border-[#202020] dark:border-slate-700 shadow-[2.5px_2.5px_0px_#202020] text-[#202020] dark:text-[#E8EDFD] flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold tracking-wider">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
             Budget Utilization
           </span>
-          <div className="font-serif text-2xl sm:text-3xl font-bold tracking-tight mt-1 tabular-nums">
+          <div className="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">
             {healthMetrics.budgetUtilization}%
           </div>
-          <p className="text-[11px] font-medium opacity-85 mt-0.5">Across active category caps</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Across active limits</p>
         </div>
 
-        <div className="card-lavender p-4 sm:p-5 flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold tracking-wider">
-            Period Expense Drift
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+            Period Expense Change
           </span>
-          <div className="font-serif text-2xl sm:text-3xl font-bold tracking-tight mt-1 flex items-center gap-1 tabular-nums">
+          <div
+            className={`text-xl sm:text-2xl font-extrabold mt-1 flex items-center gap-1 ${
+              healthMetrics.momChange > 0
+                ? 'text-rose-600'
+                : healthMetrics.momChange < 0
+                ? 'text-emerald-600'
+                : 'text-slate-600'
+            }`}
+          >
             {healthMetrics.momChange > 0 ? (
-              <TrendingUp className="w-5 h-5 text-[#E25C38]" />
+              <TrendingUp className="w-5 h-5" />
             ) : healthMetrics.momChange < 0 ? (
-              <TrendingDown className="w-5 h-5 text-[#2B7A49]" />
+              <TrendingDown className="w-5 h-5" />
             ) : null}
             <span>{healthMetrics.momChange > 0 ? '+' : ''}{healthMetrics.momChange}%</span>
           </div>
-          <p className="text-[11px] font-medium opacity-80 mt-0.5">Vs prior equivalent period</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Compared to prior cycle</p>
         </div>
       </div>
 
-      {/* 2. Spending Trend Chart */}
-      <div className="card-retro p-5 sm:p-6">
+      {/* 2. Spending Trend Area Chart */}
+      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#202020] dark:text-white">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Spending Velocity Trend
             </h3>
-            <p className="text-xs text-[#626262] dark:text-slate-400">Expense outflow distribution over time</p>
+            <p className="text-xs text-slate-400">Expense outflow distribution over time</p>
           </div>
 
-          <div className="flex items-center gap-1 p-1 bg-[#F6F4EB] dark:bg-[#18181D] border-[1.5px] border-[#202020] rounded-xl text-xs font-bold print:hidden">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold print:hidden">
             <button
               type="button"
               onClick={() => setTrendView('daily')}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-md transition-all ${
                 trendView === 'daily'
-                  ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
-                  : 'text-[#626262] dark:text-slate-400'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                  : 'text-slate-500'
               }`}
             >
               Daily
@@ -407,10 +429,10 @@ export const AnalyticsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setTrendView('weekly')}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-md transition-all ${
                 trendView === 'weekly'
-                  ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
-                  : 'text-[#626262] dark:text-slate-400'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                  : 'text-slate-500'
               }`}
             >
               Weekly
@@ -418,10 +440,10 @@ export const AnalyticsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setTrendView('monthly')}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-md transition-all ${
                 trendView === 'monthly'
-                  ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
-                  : 'text-[#626262] dark:text-slate-400'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                  : 'text-slate-500'
               }`}
             >
               Monthly
@@ -435,30 +457,26 @@ export const AnalyticsPage: React.FC = () => {
               <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FFAB83" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="#FFAB83" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="label" stroke="#888" fontSize={11} tickLine={false} axisLine={{ stroke: '#202020' }} />
-                <YAxis stroke="#888" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
                 <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const val = payload[0].value as number;
-                      return (
-                        <div className="p-2.5 rounded-xl bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] shadow-[2px_2px_0px_#202020] text-xs font-bold">
-                          <span className="text-[#626262] dark:text-slate-400">{payload[0].payload.label}: </span>
-                          <span className="text-[#202020] dark:text-white font-serif">{currency === 'INR' ? '₹' : '$'}{val.toLocaleString()}</span>
-                        </div>
-                      );
-                    }
-                    return null;
+                  contentStyle={{
+                    backgroundColor: '#1E293B',
+                    borderRadius: '12px',
+                    border: 'none',
+                    color: '#fff',
+                    fontSize: '12px',
                   }}
+                  formatter={(val: any) => [`${currency} ${Number(val).toFixed(2)}`, 'Expense']}
                 />
                 <Area
                   type="monotone"
                   dataKey="amount"
-                  stroke="#202020"
+                  stroke="#10B981"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#spendGradient)"
@@ -466,7 +484,7 @@ export const AnalyticsPage: React.FC = () => {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-xs text-[#626262] dark:text-slate-400 font-medium">
+            <div className="h-full flex items-center justify-center text-xs text-slate-400">
               No trend data available for this range.
             </div>
           )}
@@ -476,12 +494,12 @@ export const AnalyticsPage: React.FC = () => {
       {/* 3. Category Breakdown & Ranked Table */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Category Donut */}
-        <div className="card-retro p-5 flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="font-serif text-lg font-bold text-[#202020] dark:text-white">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Category Distribution
             </h3>
-            <p className="text-xs text-[#626262] dark:text-slate-400">Proportional expense allocation</p>
+            <p className="text-xs text-slate-400">Proportional expense allocation</p>
           </div>
 
           {categoryBreakdown.length > 0 ? (
@@ -497,11 +515,9 @@ export const AnalyticsPage: React.FC = () => {
                     innerRadius={55}
                     outerRadius={80}
                     paddingAngle={3}
-                    stroke="#202020"
-                    strokeWidth={1.5}
                   >
                     {categoryBreakdown.map((entry, index) => (
-                      <Cell key={`cat-${index}`} fill={pastelColors[index % pastelColors.length]} />
+                      <Cell key={`cat-${index}`} fill={entry.categoryColor} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -511,46 +527,46 @@ export const AnalyticsPage: React.FC = () => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-56 flex items-center justify-center text-xs text-[#626262] dark:text-slate-400 font-medium">
+            <div className="h-56 flex items-center justify-center text-xs text-slate-400">
               No expenses in this period.
             </div>
           )}
         </div>
 
         {/* Ranked Category Table */}
-        <div className="lg:col-span-2 card-retro p-5 sm:p-6">
-          <h3 className="font-serif text-lg font-bold text-[#202020] dark:text-white mb-1">
+        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">
             Top Expense Categories Ranked
           </h3>
-          <p className="text-xs text-[#626262] dark:text-slate-400 mb-4">
+          <p className="text-xs text-slate-400 mb-4">
             Sorted by highest cumulative drain on your funds
           </p>
 
           {categoryBreakdown.length > 0 ? (
-            <div className="divide-y-[1.5px] divide-[#202020]/10 dark:divide-slate-800 text-xs">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
               {categoryBreakdown.map((cat, idx) => (
                 <div key={cat.categoryId} className="py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-serif font-bold text-[#202020] dark:text-white w-4 text-center">{idx + 1}</span>
+                    <span className="font-mono text-slate-400 w-4 text-center">{idx + 1}</span>
                     <span
-                      className="w-3.5 h-3.5 rounded-md border border-[#202020] flex-shrink-0"
-                      style={{ backgroundColor: pastelColors[idx % pastelColors.length] }}
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: cat.categoryColor }}
                     />
                     <div>
-                      <span className="font-bold text-[#202020] dark:text-slate-200">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
                         {cat.categoryName}
                       </span>
-                      <span className="text-[10px] text-[#626262] dark:text-slate-400 block">
+                      <span className="text-[10px] text-slate-400 block">
                         {cat.transactionCount} transactions
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="font-serif font-bold text-[#202020] dark:text-white tabular-nums">
+                    <div className="font-bold text-slate-900 dark:text-white">
                       {formatMoney(cat.totalAmount, currency)}
                     </div>
-                    <span className="text-[10px] font-bold text-[#2B7A49] dark:text-[#7BD39A]">
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                       {cat.percentage}% of total
                     </span>
                   </div>
@@ -558,7 +574,7 @@ export const AnalyticsPage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="py-12 text-center text-xs text-[#626262] dark:text-slate-400 font-medium">
+            <div className="py-12 text-center text-xs text-slate-400">
               No category data recorded.
             </div>
           )}
@@ -566,21 +582,21 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* 4. Merchant Insights (Most Frequent & Highest Spend) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-        <div className="card-retro p-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
           <div className="flex items-center gap-2 mb-3">
-            <Store className="w-4 h-4 text-[#202020] dark:text-white" />
-            <h3 className="font-serif text-base font-bold text-[#202020] dark:text-white">
-              Highest Spend Outlets & Merchants
+            <Store className="w-4 h-4 text-emerald-500" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              Highest Spend Merchants
             </h3>
           </div>
-          <div className="divide-y-[1.5px] divide-[#202020]/10 dark:divide-slate-800 text-xs">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
             {merchantInsights.topBySpend.map((m, idx) => (
               <div key={idx} className="py-2.5 flex items-center justify-between">
-                <span className="font-bold text-[#202020] dark:text-slate-200 truncate max-w-[200px]">
+                <span className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
                   {m.name}
                 </span>
-                <span className="font-serif font-bold text-[#202020] dark:text-white tabular-nums">
+                <span className="font-bold text-slate-900 dark:text-white">
                   {formatMoney(m.total, currency)}
                 </span>
               </div>
@@ -588,21 +604,21 @@ export const AnalyticsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="card-retro p-5">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
           <div className="flex items-center gap-2 mb-3">
-            <Flame className="w-4 h-4 text-[#E25C38]" />
-            <h3 className="font-serif text-base font-bold text-[#202020] dark:text-white">
+            <Flame className="w-4 h-4 text-amber-500" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Most Frequent Merchants
             </h3>
           </div>
-          <div className="divide-y-[1.5px] divide-[#202020]/10 dark:divide-slate-800 text-xs">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
             {merchantInsights.topByFrequency.map((m, idx) => (
               <div key={idx} className="py-2.5 flex items-center justify-between">
-                <span className="font-bold text-[#202020] dark:text-slate-200 truncate max-w-[200px]">
+                <span className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
                   {m.name}
                 </span>
-                <span className="font-bold text-[#626262] dark:text-slate-400">
-                  {m.count} visits
+                <span className="font-semibold text-slate-600 dark:text-slate-400">
+                  {m.count} visits / orders
                 </span>
               </div>
             ))}

@@ -22,14 +22,14 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   } = useFinance();
 
   return (
-    <div className="min-h-screen bg-[#FBF9F2] dark:bg-[#141416] text-[#202020] dark:text-[#F5F5F7] flex flex-col lg:flex-row transition-colors selection:bg-[#FFDB8A] selection:text-[#202020]">
-      {/* Desktop Neo-Retro Sidebar */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row transition-colors">
+      {/* Desktop Sidebar */}
       <Sidebar />
 
       {/* Main Workspace */}
-      <div className="flex-1 flex flex-col min-w-0 pb-24 lg:pb-10">
+      <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-8">
         <TopHeader />
-        <main className="flex-1 p-3.5 sm:p-5 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

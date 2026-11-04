@@ -14,7 +14,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
   onClose,
   defaultSourceAccountId,
 }) => {
-  const { accounts, settings, transferMoney, showToast } = useFinance();
+  const { accounts, settings, transferMoney } = useFinance();
   const currencyConfig = SUPPORTED_CURRENCIES[settings.currency] || SUPPORTED_CURRENCIES.INR;
 
   const [fromAccountId, setFromAccountId] = useState('');
@@ -58,72 +58,62 @@ export const TransferModal: React.FC<TransferModalProps> = ({
     }
 
     if (!fromAccountId || !toAccountId) {
-      setErrorMsg('Please specify both source and destination accounts.');
+      setErrorMsg('Please select both source and destination accounts.');
       return;
     }
 
     if (fromAccountId === toAccountId) {
-      setErrorMsg('Source and destination accounts must be different.');
+      setErrorMsg('Source and Destination accounts must be different.');
       return;
     }
 
-    const minorAmount = toMinorUnits(parsed, currencyConfig.minorUnitDigits);
+    const minorUnits = toMinorUnits(parsed, currencyConfig.minorUnitDigits);
 
     setIsSubmitting(true);
     try {
-      await transferMoney(fromAccountId, toAccountId, minorAmount, date, notes.trim() || undefined);
-      showToast({
-        type: 'success',
-        message: `Transferred ${currencyConfig.symbol}${parsed.toLocaleString()} successfully!`,
-      });
+      await transferMoney(fromAccountId, toAccountId, minorUnits, notes, date);
       onClose();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to complete transfer.');
+      setErrorMsg(err.message || 'Transfer failed.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-[#202020]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md bg-[#FAF7EE] dark:bg-[#18181D] rounded-3xl border-2 border-[#202020] dark:border-slate-700 shadow-[4px_4px_0px_#202020] dark:shadow-[3px_3px_0px_#0A0A0C] overflow-hidden my-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-4 sm:p-5 border-b-[1.5px] border-[#202020]/15 dark:border-slate-800 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#FFDB8A] border border-[#202020] text-[#202020] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <ArrowRightLeft className="w-4 h-4" />
             </div>
-            <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#202020] dark:text-white tracking-tight">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               Transfer Funds
-            </h3>
+            </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl border-[1.5px] border-[#202020] bg-white dark:bg-[#25252D] text-[#202020] dark:text-white shadow-[1px_1px_0px_#202020] hover:bg-[#F8F5EC]"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
-            <X className="w-4 h-4 stroke-[2.5]" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {errorMsg && (
-          <div className="mx-4 mt-3 p-3 rounded-xl bg-[#FFAB83]/40 border-[1.5px] border-[#202020] text-xs font-bold text-[#202020]">
-            {errorMsg}
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {errorMsg && (
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs border border-rose-200 dark:border-rose-900">
+              {errorMsg}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
-              Amount to Transfer
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+              Amount ({currencyConfig.symbol})
             </label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-serif text-lg font-bold text-[#626262]">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">
                 {currencyConfig.symbol}
               </span>
               <input
@@ -135,21 +125,21 @@ export const TransferModal: React.FC<TransferModalProps> = ({
                 placeholder="0.00"
                 value={amountInput}
                 onChange={(e) => setAmountInput(e.target.value)}
-                className="w-full pl-9 pr-4 py-3 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl font-serif text-xl font-bold text-[#202020] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFDB8A]"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xl font-bold text-slate-900 dark:text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 From Account
               </label>
               <select
                 required
                 value={fromAccountId}
                 onChange={(e) => setFromAccountId(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs font-bold text-[#202020] dark:text-white"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {activeAccounts.map((acc) => (
                   <option key={acc.id} value={acc.id}>
@@ -160,14 +150,14 @@ export const TransferModal: React.FC<TransferModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 To Account
               </label>
               <select
                 required
                 value={toAccountId}
                 onChange={(e) => setToAccountId(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs font-bold text-[#202020] dark:text-white"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {activeAccounts
                   .filter((a) => a.id !== fromAccountId)
@@ -182,7 +172,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Transfer Date
               </label>
               <input
@@ -190,11 +180,11 @@ export const TransferModal: React.FC<TransferModalProps> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs font-bold text-[#202020] dark:text-white"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#626262] dark:text-slate-400 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Notes
               </label>
               <input
@@ -202,19 +192,25 @@ export const TransferModal: React.FC<TransferModalProps> = ({
                 placeholder="Optional transfer memo"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white dark:bg-[#1E1E23] border-[1.5px] border-[#202020] dark:border-slate-700 rounded-xl text-xs font-medium text-[#202020] dark:text-white"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#FFDB8A] hover:bg-[#FFE099] border-2 border-[#202020] shadow-[3px_3px_0px_#202020] font-bold text-sm text-[#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm transition-all active:scale-95 disabled:opacity-50"
             >
-              <span>{isSubmitting ? 'Transferring...' : 'Execute Transfer'}</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              {isSubmitting ? 'Transferring...' : 'Execute Transfer'}
             </button>
           </div>
         </form>

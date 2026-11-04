@@ -42,6 +42,7 @@ export const AccountsPage: React.FC = () => {
   const [deleteAccountCandidate, setDeleteAccountCandidate] = useState<Account | null>(null);
 
   const currency = settings.currency;
+
   const displayedAccounts = accounts.filter((a) => (showArchived ? true : !a.isArchived));
 
   // Get account specific transactions
@@ -53,37 +54,18 @@ export const AccountsPage: React.FC = () => {
       )
     : [];
 
-  const getAccountPastelColor = (type: string, index: number) => {
-    switch (type) {
-      case 'bank':
-        return 'bg-[#FFDB8A]';
-      case 'upi':
-      case 'wallet':
-        return 'bg-[#ADE0BB]';
-      case 'cash':
-        return 'bg-[#FFAB83]';
-      case 'credit_card':
-        return 'bg-[#F1B5E3]';
-      case 'savings':
-      case 'investment':
-        return 'bg-[#CFB0E8]';
-      default:
-        return 'bg-white';
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Top Net Worth Card (Murad Hossain pastel yellow aesthetic) */}
-      <div className="card-yellow p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Top Net Worth & Quick Transfer Card */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white shadow-lg shadow-emerald-700/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#202020]">
+          <span className="text-xs uppercase font-semibold text-emerald-100 tracking-wider">
             Total Net Worth & Liquidity
           </span>
-          <div className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-[#202020] mt-1 tabular-nums">
+          <div className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-1">
             {formatMoney(netWorth, currency)}
           </div>
-          <p className="text-xs font-medium text-[#202020]/80 mt-1 max-w-sm">
+          <p className="text-xs text-emerald-100/80 mt-1 max-w-sm">
             Total assets in cash, bank, savings and UPI minus credit card liability balances.
           </p>
         </div>
@@ -95,7 +77,7 @@ export const AccountsPage: React.FC = () => {
               setTransferSourceId(undefined);
               setIsTransferOpen(true);
             }}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white hover:bg-[#F8F5EC] border-[1.5px] border-[#202020] text-[#202020] font-bold text-xs sm:text-sm shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-semibold text-xs sm:text-sm active:scale-95 transition-all cursor-pointer"
           >
             <ArrowRightLeft className="w-4 h-4" />
             <span>Transfer Funds</span>
@@ -104,9 +86,9 @@ export const AccountsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsAddAccountOpen(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#202020] hover:bg-[#303030] text-white font-bold text-xs sm:text-sm border-[1.5px] border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 font-semibold text-xs sm:text-sm shadow-sm active:scale-95 transition-all cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <Plus className="w-4 h-4" />
             <span>Add Account</span>
           </button>
         </div>
@@ -115,224 +97,255 @@ export const AccountsPage: React.FC = () => {
       {/* Account Filters and Controls */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#202020] dark:text-white">
-            Configured Accounts & Wallets
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            Managed Accounts ({displayedAccounts.length})
           </h2>
-          <p className="text-xs text-[#626262] dark:text-slate-400">
-            {displayedAccounts.length} accounts configured
-          </p>
+          <p className="text-xs text-slate-400">Click an account to inspect transaction history</p>
         </div>
 
-        <label className="flex items-center gap-2 text-xs font-bold text-[#626262] dark:text-slate-400 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={showArchived}
             onChange={(e) => setShowArchived(e.target.checked)}
-            className="rounded border border-[#202020] text-[#202020] focus:ring-[#FFDB8A]"
+            className="rounded text-emerald-600 focus:ring-emerald-500"
           />
-          <span>Show Archived</span>
+          <span>Show Archived ({accounts.filter((a) => a.isArchived).length})</span>
         </label>
       </div>
 
-      {/* Accounts Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {displayedAccounts.map((acc, index) => {
-          const balance = accountBalances.get(acc.id) ?? acc.initialBalance;
-          const isNegative = balance < 0;
-          const bgPill = getAccountPastelColor(acc.type, index);
+      {/* Account Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {displayedAccounts.map((acc) => {
+          const currentBalance = accountBalances.get(acc.id) ?? acc.initialBalance;
+          const isNegative = currentBalance < 0;
 
           return (
             <div
               key={acc.id}
-              className={`card-retro p-5 flex flex-col justify-between space-y-4 ${
-                acc.isArchived ? 'opacity-60' : ''
+              className={`p-5 rounded-2xl bg-white dark:bg-slate-900 border transition-all duration-200 relative group flex flex-col justify-between ${
+                acc.isArchived
+                  ? 'border-slate-200/50 dark:border-slate-800 opacity-60'
+                  : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs'
               }`}
             >
               <div>
-                {/* Account Top Row */}
-                <div className="flex items-start justify-between gap-3 mb-2">
+                {/* Header: Icon, Name, Type */}
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-11 h-11 rounded-2xl border-[1.5px] border-[#202020] flex items-center justify-center text-[#202020] shadow-[1.5px_1.5px_0px_#202020] ${bgPill}`}
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-2xs"
+                      style={{ backgroundColor: acc.color }}
                     >
-                      <IconRenderer
-                        iconName={
-                          acc.type === 'bank'
-                            ? 'Building2'
-                            : acc.type === 'upi'
-                            ? 'Smartphone'
-                            : acc.type === 'credit_card'
-                            ? 'CreditCard'
-                            : 'Wallet'
-                        }
-                        className="w-5 h-5"
-                      />
+                      <IconRenderer name={acc.icon || 'Wallet'} className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-serif font-bold text-base text-[#202020] dark:text-white line-clamp-1">
-                        {acc.name}
-                      </h3>
-                      <div className="text-[11px] font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider">
-                        {acc.type.replace('_', ' ')}
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
+                          {acc.name}
+                        </h3>
+                        {acc.isArchived && (
+                          <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                            Archived
+                          </span>
+                        )}
                       </div>
+                      <span className="text-[11px] font-medium text-slate-400 capitalize">
+                        {acc.type === 'credit'
+                          ? 'Credit Card Liability'
+                          : acc.type === 'upi'
+                          ? 'UPI Wallet'
+                          : acc.type}
+                      </span>
                     </div>
                   </div>
 
-                  {acc.accountNumberMasked && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-white dark:bg-[#1E1E23] border border-[#202020] text-[#202020] dark:text-slate-300">
-                      {acc.accountNumberMasked}
-                    </span>
-                  )}
+                  {/* Actions Dropdown / Buttons */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setEditAccount(acc)}
+                      title="Edit Account"
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    {acc.isArchived ? (
+                      <button
+                        type="button"
+                        onClick={() => updateAccount(acc.id, { isArchived: false })}
+                        title="Unarchive Account"
+                        className="p-1 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setDeleteAccountCandidate(acc)}
+                        title="Archive or Delete Account"
+                        className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Account Balance */}
-                <div className="mt-4">
-                  <span className="text-[10px] uppercase font-bold text-[#626262] dark:text-slate-400 tracking-wider">
+                {/* Balances */}
+                <div className="space-y-1 mb-4">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Current Balance
                   </span>
                   <div
-                    className={`font-serif text-2xl sm:text-3xl font-bold tracking-tight tabular-nums ${
-                      isNegative ? 'text-rose-600' : 'text-[#202020] dark:text-white'
+                    className={`text-2xl font-extrabold tracking-tight ${
+                      isNegative ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
                     }`}
                   >
-                    {formatMoney(balance, currency)}
+                    {formatMoney(currentBalance, currency)}
                   </div>
-                  {acc.notes && (
-                    <p className="text-[11px] text-[#626262] dark:text-slate-400 line-clamp-1 mt-0.5">
-                      {acc.notes}
-                    </p>
-                  )}
+                  <div className="text-[11px] text-slate-400">
+                    Opening: {formatMoney(acc.initialBalance, currency)}
+                    {acc.accountNumberMasked && ` • ${acc.accountNumberMasked}`}
+                  </div>
                 </div>
               </div>
 
-              {/* Account Card Bottom Actions */}
-              <div className="pt-3 border-t-[1.5px] border-[#202020]/10 dark:border-slate-800 flex items-center justify-between">
+              {/* Bottom Card Actions: Transfer & History */}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setTransferSourceId(acc.id);
-                    setIsTransferOpen(true);
-                  }}
-                  className="py-1 px-2.5 rounded-xl bg-white dark:bg-[#1E1E23] border border-[#202020] text-xs font-bold text-[#202020] dark:text-white shadow-[1px_1px_0px_#202020] hover:bg-[#F8F5EC] flex items-center gap-1 cursor-pointer"
+                  onClick={() => setSelectedAccountHistory(acc)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
-                  <ArrowRightLeft className="w-3.5 h-3.5" />
-                  <span>Transfer</span>
+                  <History className="w-3.5 h-3.5" />
+                  <span>View History</span>
                 </button>
 
-                <div className="flex items-center gap-1.5">
+                {!acc.isArchived && (
                   <button
                     type="button"
-                    onClick={() => setSelectedAccountHistory(acc)}
-                    title="Account Ledger History"
-                    className="p-1.5 rounded-xl border border-[#202020] bg-white dark:bg-[#1E1E23] text-[#202020] dark:text-white hover:bg-[#F8F5EC] shadow-[1px_1px_0px_#202020] cursor-pointer"
+                    onClick={() => {
+                      setTransferSourceId(acc.id);
+                      setIsTransferOpen(true);
+                    }}
+                    className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
                   >
-                    <History className="w-3.5 h-3.5" />
+                    <ArrowRightLeft className="w-3 h-3" />
+                    <span>Transfer</span>
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditAccount(acc)}
-                    title="Edit Account Details"
-                    className="p-1.5 rounded-xl border border-[#202020] bg-white dark:bg-[#1E1E23] text-[#202020] dark:text-white hover:bg-[#F8F5EC] shadow-[1px_1px_0px_#202020] cursor-pointer"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => updateAccount(acc.id, { isArchived: !acc.isArchived })}
-                    title={acc.isArchived ? 'Unarchive' : 'Archive Account'}
-                    className="p-1.5 rounded-xl border border-[#202020] bg-white dark:bg-[#1E1E23] text-[#626262] hover:bg-[#F8F5EC] shadow-[1px_1px_0px_#202020] cursor-pointer"
-                  >
-                    {acc.isArchived ? <RotateCcw className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDeleteAccountCandidate(acc)}
-                    title="Delete Account"
-                    className="p-1.5 rounded-xl border border-[#202020] bg-white dark:bg-[#1E1E23] text-rose-600 hover:bg-rose-50 shadow-[1px_1px_0px_#202020] cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Account History Slide-Over / Modal */}
+      {/* Account Specific Transaction History Drawer */}
       {selectedAccountHistory && (
         <div
-          className="fixed inset-0 z-50 bg-[#202020]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex justify-end"
           onClick={() => setSelectedAccountHistory(null)}
         >
           <div
-            className="w-full max-w-lg bg-[#FAF7EE] dark:bg-[#18181D] rounded-3xl border-2 border-[#202020] dark:border-slate-700 shadow-[4px_4px_0px_#202020] overflow-hidden my-auto"
+            className="w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl p-6 flex flex-col justify-between overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-5 border-b-[1.5px] border-[#202020]/15 dark:border-slate-800 flex items-center justify-between">
-              <div>
-                <h3 className="font-serif text-xl font-bold text-[#202020] dark:text-white">
-                  {selectedAccountHistory.name} Ledger
-                </h3>
-                <p className="text-xs text-[#626262]">
-                  Balance: {formatMoney(accountBalances.get(selectedAccountHistory.id) ?? selectedAccountHistory.initialBalance, currency)}
-                </p>
+            <div>
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
+                    style={{ backgroundColor: selectedAccountHistory.color }}
+                  >
+                    <IconRenderer name={selectedAccountHistory.icon || 'Wallet'} className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                      {selectedAccountHistory.name}
+                    </h3>
+                    <span className="text-xs text-slate-400">
+                      Balance:{' '}
+                      <strong className="text-slate-800 dark:text-slate-200">
+                        {formatMoney(
+                          accountBalances.get(selectedAccountHistory.id) ??
+                            selectedAccountHistory.initialBalance,
+                          currency
+                        )}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAccountHistory(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedAccountHistory(null)}
-                className="p-1.5 rounded-xl border-[1.5px] border-[#202020] bg-white text-[#202020] hover:bg-[#F8F5EC]"
-              >
-                <X className="w-4 h-4 stroke-[2.5]" />
-              </button>
+
+              {/* Transactions list */}
+              <div className="mt-4 space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Transactions ({accountTransactions.length})
+                </span>
+
+                {accountTransactions.length > 0 ? (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {accountTransactions.map((tx) => (
+                      <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
+                        <div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            {tx.title}
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            {tx.date} • {tx.type}
+                          </div>
+                        </div>
+                        <div
+                          className={`font-bold text-sm ${
+                            tx.type === 'income'
+                              ? 'text-emerald-600'
+                              : tx.type === 'expense'
+                              ? 'text-slate-900 dark:text-white'
+                              : 'text-blue-600'
+                          }`}
+                        >
+                          {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
+                          {formatMoney(tx.amount, currency)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 py-8 text-center">
+                    No transactions associated with this account.
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="p-4 max-h-96 overflow-y-auto divide-y-[1.5px] divide-[#202020]/10 text-xs">
-              {accountTransactions.length > 0 ? (
-                accountTransactions.map((tx) => (
-                  <div key={tx.id} className="py-2.5 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-[#202020] dark:text-white">{tx.title}</div>
-                      <div className="text-[11px] text-[#626262]">{tx.date}</div>
-                    </div>
-                    <div
-                      className={`font-serif text-sm font-bold tabular-nums ${
-                        tx.type === 'income'
-                          ? 'text-[#2B7A49]'
-                          : tx.type === 'expense'
-                          ? 'text-[#202020]'
-                          : 'text-blue-600'
-                      }`}
-                    >
-                      {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
-                      {formatMoney(tx.amount, currency)}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-10 text-center text-xs text-[#626262]">
-                  No transactions recorded for this account.
-                </div>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedAccountHistory(null)}
+              className="mt-6 w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs"
+            >
+              Close Ledger
+            </button>
           </div>
         </div>
       )}
 
-      {/* Account Add/Edit Modal */}
-      {(isAddAccountOpen || editAccount) && (
-        <AccountModal
-          isOpen={isAddAccountOpen || !!editAccount}
-          onClose={() => {
-            setIsAddAccountOpen(false);
-            setEditAccount(null);
-          }}
-          editAccount={editAccount}
-        />
-      )}
+      {/* Add & Edit Account Modal */}
+      <AccountModal
+        isOpen={isAddAccountOpen || !!editAccount}
+        onClose={() => {
+          setIsAddAccountOpen(false);
+          setEditAccount(null);
+        }}
+        editAccount={editAccount}
+      />
 
       {/* Transfer Modal */}
       <TransferModal
@@ -341,20 +354,19 @@ export const AccountsPage: React.FC = () => {
         defaultSourceAccountId={transferSourceId}
       />
 
-      {/* Delete Confirmation */}
+      {/* Delete / Archive Confirmation */}
       <ConfirmDialog
-        isOpen={Boolean(deleteAccountCandidate)}
-        title="Delete Account"
-        message={`Are you sure you want to permanently delete "${deleteAccountCandidate?.name}"? Any past transactions linked to this account will remain in your database.`}
-        confirmLabel="Delete Account"
-        isDestructive
-        onConfirm={async () => {
+        isOpen={!!deleteAccountCandidate}
+        onClose={() => setDeleteAccountCandidate(null)}
+        onConfirm={() => {
           if (deleteAccountCandidate) {
-            await deleteAccount(deleteAccountCandidate.id);
-            setDeleteAccountCandidate(null);
+            deleteAccount(deleteAccountCandidate.id);
           }
         }}
-        onCancel={() => setDeleteAccountCandidate(null)}
+        title="Archive or Delete Account?"
+        message={`Are you sure you want to remove "${deleteAccountCandidate?.name}"? If the account has past transactions, it will be safely archived so your historical financial records remain intact.`}
+        confirmText="Confirm Remove"
+        confirmVariant="danger"
       />
     </div>
   );
