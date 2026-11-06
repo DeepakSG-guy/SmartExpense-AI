@@ -11,9 +11,6 @@ import {
   Check,
   Calendar,
   Wallet,
-  Smartphone,
-  Banknote,
-  Building,
 } from 'lucide-react';
 
 interface SplitDetailsModalProps {
@@ -42,31 +39,31 @@ export const SplitDetailsModal: React.FC<SplitDetailsModalProps> = ({ split, onC
       : 0;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="bg-[#FBF9F2] dark:bg-[#1E1E22] border-2 border-[#202020] rounded-3xl max-w-xl w-full shadow-[5px_5px_0px_#202020] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4.5 border-b-2 border-[#202020] flex items-center justify-between bg-white dark:bg-[#28282D]">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-slate-900 dark:text-white text-base">
+              <h3 className="font-serif font-bold text-[#202020] dark:text-white text-lg">
                 {split.title}
               </h3>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#202020] ${
                   split.status === 'settled'
-                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
-                    : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
+                    ? 'bg-[#ADE0BB] text-[#202020]'
+                    : 'bg-[#FFDB8A] text-[#202020]'
                 }`}
               >
                 {split.status}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
               Split on {split.date} • Paid upfront by{' '}
-              <strong className="text-slate-700 dark:text-slate-300">
+              <strong className="text-[#202020] dark:text-white font-bold">
                 {split.payer.name} {split.payer.id === currentParticipantId ? '(You)' : ''}
               </strong>
             </p>
@@ -75,53 +72,53 @@ export const SplitDetailsModal: React.FC<SplitDetailsModalProps> = ({ split, onC
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="w-8 h-8 rounded-full border-2 border-[#202020] bg-white dark:bg-[#1E1E22] text-[#202020] dark:text-white flex items-center justify-center hover:bg-[#FFDB8A] transition-colors shadow-[1.5px_1.5px_0px_#202020] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-          {/* Progress / Overview banner */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+          {/* Progress / Overview banner (Buttercup card) */}
+          <div className="p-4.5 rounded-2xl bg-[#FFDB8A] border-2 border-[#202020] shadow-[3px_3px_0px_#202020] space-y-3 text-[#202020]">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+              <span className="font-bold uppercase tracking-wider text-[11px]">
                 Total Amount
               </span>
-              <span className="text-lg font-extrabold text-slate-900 dark:text-white">
+              <span className="font-serif text-2xl font-bold tracking-tight">
                 {formatMoney(split.totalAmount, currency)}
               </span>
             </div>
 
             {/* Visual Progress bar */}
             <div>
-              <div className="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
+              <div className="flex justify-between text-[11px] font-bold mb-1">
                 <span>Settled: {formatMoney(split.totalSettled, currency)} ({percentSettled}%)</span>
                 <span>Remaining: {formatMoney(split.remainingAmount, currency)}</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+              <div className="w-full h-3 rounded-full bg-white border-2 border-[#202020] overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  className="h-full bg-[#ADE0BB] transition-all duration-300"
                   style={{ width: `${percentSettled}%` }}
                 />
               </div>
             </div>
 
             {split.notes && (
-              <p className="text-xs text-slate-500 italic pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+              <p className="text-xs font-medium italic pt-2 border-t border-[#202020]/20">
                 "{split.notes}"
               </p>
             )}
           </div>
 
           {/* Participant Breakdown */}
-          <div className="space-y-2">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
+          <div className="space-y-2.5">
+            <div className="text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider px-1">
               Participants Breakdown ({split.shares.length})
             </div>
 
-            <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+            <div className="space-y-2">
               {split.shares.map((share) => {
                 const pending = Math.max(0, share.amount - share.settledAmount);
                 const isPayer = share.participantId === split.payerParticipantId;
@@ -129,42 +126,42 @@ export const SplitDetailsModal: React.FC<SplitDetailsModalProps> = ({ split, onC
                 return (
                   <div
                     key={share.id}
-                    className="p-3.5 flex items-center justify-between gap-3 bg-white dark:bg-slate-900"
+                    className="p-3.5 rounded-2xl border-2 border-[#202020] bg-white dark:bg-[#28282D] shadow-[2px_2px_0px_#202020] flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
-                      <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <div className="text-xs font-bold text-[#202020] dark:text-white flex items-center gap-1.5">
                         <span>{share.participant.name}</span>
                         {share.participant.isCurrentUser && (
-                          <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 rounded font-normal">
+                          <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 px-1.5 rounded-full font-bold">
                             You
                           </span>
                         )}
                         {isPayer && (
-                          <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 px-1.5 rounded font-semibold">
+                          <span className="text-[10px] bg-[#ADE0BB] text-[#202020] border border-[#202020] px-1.5 rounded-full font-bold">
                             Paid Upfront
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
+                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
                         Share: {formatMoney(share.amount, currency)}
                         {share.percentage ? ` (${share.percentage}%)` : ''}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-2.5 flex-shrink-0">
                       <div className="text-right">
                         {share.isPaid ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-xl">
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-[#202020] bg-[#ADE0BB] border border-[#202020] px-2.5 py-1 rounded-xl shadow-[1px_1px_0px_#202020]">
                             <Check className="w-3.5 h-3.5" />
                             <span>Settled</span>
                           </span>
                         ) : (
                           <div>
-                            <div className="font-bold text-xs text-rose-600 dark:text-rose-400">
+                            <div className="font-serif font-bold text-xs text-rose-600 dark:text-rose-400">
                               Owes {formatMoney(pending, currency)}
                             </div>
                             {share.settledAmount > 0 && (
-                              <div className="text-[10px] text-slate-400">
+                              <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-medium">
                                 ({formatMoney(share.settledAmount, currency)} paid)
                               </div>
                             )}
@@ -180,7 +177,7 @@ export const SplitDetailsModal: React.FC<SplitDetailsModalProps> = ({ split, onC
                             onClose();
                             openSettleModal(split.id, share.participantId);
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
+                          className="px-3.5 py-1.5 rounded-xl bg-[#ADE0BB] hover:bg-[#97D4A6] text-[#202020] text-xs font-bold border-2 border-[#202020] shadow-[2px_2px_0px_#202020] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer transition-all"
                         >
                           Settle
                         </button>
@@ -193,32 +190,32 @@ export const SplitDetailsModal: React.FC<SplitDetailsModalProps> = ({ split, onC
           </div>
 
           {/* Settlement History */}
-          <div className="space-y-2">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
+          <div className="space-y-2.5">
+            <div className="text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider px-1">
               Repayment & Settlement History ({split.settlements.length})
             </div>
 
             {split.settlements.length > 0 ? (
-              <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden text-xs">
+              <div className="space-y-2">
                 {split.settlements.map((stl) => {
                   const fromPerson = split.shares.find((s) => s.participantId === stl.fromParticipantId)?.participant;
 
                   return (
                     <div
                       key={stl.id}
-                      className="p-3 flex items-center justify-between gap-3 bg-white dark:bg-slate-900"
+                      className="p-3 rounded-2xl border-2 border-[#202020] bg-white dark:bg-[#28282D] shadow-[2px_2px_0px_#202020] flex items-center justify-between gap-3 text-xs"
                     >
                       <div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">
+                        <div className="font-bold text-[#202020] dark:text-white">
                           {fromPerson?.name || 'Participant'} paid{' '}
-                          <strong className="text-emerald-600 dark:text-emerald-400">
+                          <span className="font-serif font-bold text-[#202020] dark:text-[#ADE0BB]">
                             {formatMoney(stl.amount, currency)}
-                          </strong>
+                          </span>
                         </div>
-                        <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                        <div className="text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center gap-2 mt-0.5 font-medium">
                           <span>{stl.date}</span>
                           <span>•</span>
-                          <span className="uppercase font-mono">{stl.paymentMode}</span>
+                          <span className="uppercase font-mono font-bold">{stl.paymentMode}</span>
                           {stl.notes && <span>• "{stl.notes}"</span>}
                         </div>
                       </div>
@@ -226,7 +223,7 @@ export const SplitDetailsModal: React.FC<SplitDetailsModalProps> = ({ split, onC
                       <button
                         type="button"
                         onClick={() => handleReverseSettlement(stl.id)}
-                        className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-rose-500 py-1 px-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-neutral-600 hover:text-rose-600 dark:text-neutral-400 py-1 px-2.5 rounded-xl border border-[#202020] bg-[#FBF9F2] dark:bg-[#1E1E22] shadow-[1px_1px_0px_#202020] cursor-pointer"
                         title="Reverse / Undo Settlement"
                       >
                         <RotateCcw className="w-3 h-3" />
@@ -237,7 +234,7 @@ export const SplitDetailsModal: React.FC<SplitDetailsModalProps> = ({ split, onC
                 })}
               </div>
             ) : (
-              <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center text-xs text-slate-400">
+              <div className="p-4.5 rounded-2xl border-2 border-dashed border-[#202020] text-center text-xs font-medium text-neutral-500 bg-white/50 dark:bg-[#28282D]/50">
                 No repayments recorded yet.
               </div>
             )}

@@ -320,24 +320,24 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       {/* 0. Cloud Account & Supabase Integration */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <Cloud className="w-4 h-4" />
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#1E1E22] border-2 border-[#202020] shadow-[3px_3px_0px_#202020] space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-[#202020]/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#CFB0E8] border-2 border-[#202020] text-[#202020] flex items-center justify-center shadow-[1.5px_1.5px_0px_#202020]">
+              <Cloud className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                Account & Cloud Database Sync
+              <h2 className="text-lg font-serif font-bold text-[#202020] dark:text-white">
+                Account & Cloud Sync
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#626262] dark:text-slate-400 font-medium">
                 Supabase PostgreSQL with Row Level Security (RLS) & cross-device backup
               </p>
             </div>
           </div>
           {user && (
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-[#ADE0BB] text-[#202020] border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020]">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
               Authenticated
             </span>
           )}
@@ -346,19 +346,19 @@ export const SettingsPage: React.FC = () => {
         {/* User Card or Guest Invitation */}
         {user ? (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="p-5 rounded-2xl bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-bold text-lg flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-[#FFDB8A] border-2 border-[#202020] text-[#202020] font-serif font-bold text-xl flex items-center justify-center shadow-[1.5px_1.5px_0px_#202020]">
                   {(profile?.displayName || user.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-bold text-slate-900 dark:text-white text-base">
+                  <div className="font-serif font-bold text-[#202020] dark:text-white text-base">
                     {profile?.displayName || 'SmartExpense User'}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                  <div className="text-xs text-[#626262] dark:text-slate-400 font-medium">
                     {user.email}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                  <div className="text-[11px] text-[#626262] dark:text-slate-500 font-mono mt-0.5">
                     UID: {user.id.substring(0, 18)}...
                   </div>
                 </div>
@@ -369,7 +369,7 @@ export const SettingsPage: React.FC = () => {
                   type="button"
                   onClick={handleManualSync}
                   disabled={isSyncingNow}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all disabled:opacity-60 cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] text-xs font-bold border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all disabled:opacity-60 cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isSyncingNow ? 'animate-spin' : ''}`} />
                   <span>{isSyncingNow ? 'Syncing...' : 'Sync Cloud'}</span>
@@ -378,27 +378,27 @@ export const SettingsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={openMigrationModal}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FFDB8A] hover:bg-[#FCD276] text-[#202020] text-xs font-bold border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
                 >
-                  <CloudUpload className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Migrate Local Data</span>
+                  <CloudUpload className="w-3.5 h-3.5" />
+                  <span>Migrate Data</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleSendPasswordReset}
                   disabled={isResettingPass}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#1E1E22] hover:bg-[#FBF9F2] text-[#202020] dark:text-white text-xs font-bold border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
                   title="Send password reset link to your email"
                 >
                   <Key className="w-3.5 h-3.5" />
-                  <span>Reset Password</span>
+                  <span>Reset Pass</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => signOut()}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-semibold transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#FFAB83] hover:bg-[#F69C72] text-[#202020] text-xs font-bold border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
@@ -407,28 +407,28 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="p-4 sm:p-5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#FFDB8A]/30 border-2 border-[#202020] shadow-[2px_2px_0px_#202020] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Local Storage Mode Active (IndexedDB)
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-[#202020]" />
+                <h3 className="font-serif font-bold text-base text-[#202020] dark:text-white">
+                  Local Mode Active (IndexedDB)
                 </h3>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
-                Your transactions, accounts, and budgets are currently stored only inside your browser's local IndexedDB. Log in or register to enable cloud synchronization with Supabase PostgreSQL and Row Level Security.
+              <p className="text-xs text-[#626262] dark:text-slate-300 mt-1 max-w-xl">
+                Your data is stored securely in your browser. Log in or create an account to enable cloud sync across phones, tablets, and computers.
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Link
                 to="/login"
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all shadow-sm"
+                className="px-4 py-2 rounded-xl bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] text-xs font-bold border-2 border-[#202020] shadow-[2px_2px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition-all"
+                className="px-4 py-2 rounded-xl bg-white dark:bg-[#1E1E22] hover:bg-[#FBF9F2] text-[#202020] dark:text-white text-xs font-bold border-2 border-[#202020] shadow-[2px_2px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all"
               >
                 Create Account
               </Link>
@@ -437,17 +437,17 @@ export const SettingsPage: React.FC = () => {
         )}
 
         {/* Supabase Custom Configuration */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-          <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+        <div className="pt-3 border-t-2 border-[#202020]/10">
+          <div className="text-xs font-bold text-[#202020] dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
             <span>Supabase Connection Settings</span>
-            <span className="text-[11px] font-normal text-slate-400">
+            <span className="text-[11px] font-normal text-[#626262] dark:text-slate-400">
               Optional: connect custom Supabase project
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1">
                 Supabase Project URL
               </label>
               <input
@@ -455,11 +455,11 @@ export const SettingsPage: React.FC = () => {
                 placeholder="https://xyzcompany.supabase.co"
                 value={supabaseUrl}
                 onChange={(e) => setSupabaseUrl(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
+                className="w-full px-3.5 py-2.5 text-xs bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-[#202020] dark:text-white focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1">
                 Anon Public Key
               </label>
               <div className="relative">
@@ -468,12 +468,12 @@ export const SettingsPage: React.FC = () => {
                   placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
                   value={supabaseAnonKey}
                   onChange={(e) => setSupabaseAnonKey(e.target.value)}
-                  className="w-full pl-3 pr-9 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-mono"
+                  className="w-full pl-3.5 pr-9 py-2.5 text-xs bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-[#202020] dark:text-white font-mono focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowAnonKey(!showAnonKey)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#626262] hover:text-[#202020] dark:hover:text-white"
                 >
                   {showAnonKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
@@ -487,33 +487,33 @@ export const SettingsPage: React.FC = () => {
                 type="button"
                 onClick={handleTestSupabase}
                 disabled={isTestingSupabase}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FFDB8A] hover:bg-[#FCD276] text-xs font-bold text-[#202020] border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isTestingSupabase ? 'animate-spin' : ''}`} />
-                <span>{isTestingSupabase ? 'Testing Connection...' : 'Save & Test Connection'}</span>
+                <span>{isTestingSupabase ? 'Testing...' : 'Save & Test Connection'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleResetSupabaseConfig}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
+                className="px-3 py-2 rounded-xl text-xs font-bold text-[#626262] hover:text-[#202020] dark:hover:text-white transition-colors cursor-pointer"
               >
-                Reset to Defaults
+                Reset Defaults
               </button>
             </div>
 
             {testResult && (
               <div
-                className={`text-xs px-3 py-1 rounded-lg flex items-center gap-1.5 ${
+                className={`text-xs px-3 py-1.5 rounded-xl border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] flex items-center gap-1.5 font-medium ${
                   testResult.success
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                    ? 'bg-[#ADE0BB] text-[#202020]'
+                    : 'bg-[#FFAB83] text-[#202020]'
                 }`}
               >
                 {testResult.success ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-800 flex-shrink-0" />
                 ) : (
-                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
+                  <AlertTriangle className="w-4 h-4 text-rose-800 flex-shrink-0" />
                 )}
                 <span>{testResult.message}</span>
               </div>
@@ -523,36 +523,41 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* 1. General Preferences Form */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <Settings className="w-5 h-5 text-emerald-600" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            General Preferences
-          </h2>
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#1E1E22] border-2 border-[#202020] shadow-[3px_3px_0px_#202020] space-y-5">
+        <div className="flex items-center gap-3 pb-3 border-b-2 border-[#202020]/10">
+          <div className="w-10 h-10 rounded-2xl bg-[#FFDB8A] border-2 border-[#202020] text-[#202020] flex items-center justify-center shadow-[1.5px_1.5px_0px_#202020]">
+            <Settings className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-serif font-bold text-[#202020] dark:text-white">
+              General Preferences
+            </h2>
+            <p className="text-xs text-[#626262] dark:text-slate-400 font-medium">Currency, theme, and date display</p>
+          </div>
         </div>
 
         <form onSubmit={handleSaveGeneral} className="space-y-4 text-xs sm:text-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Display Name / Profile
               </label>
               <input
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-xl text-slate-900 dark:text-white"
+                className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-[#202020] dark:text-white font-medium focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Default Currency
               </label>
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-xl text-slate-900 dark:text-white"
+                className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-[#202020] dark:text-white font-medium focus:outline-none"
               >
                 {Object.values(SUPPORTED_CURRENCIES).map((c: CurrencyConfig) => (
                   <option key={c.code} value={c.code}>
@@ -565,28 +570,28 @@ export const SettingsPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Theme
               </label>
               <select
                 value={theme}
                 onChange={(e) => setTheme(e.target.value as any)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-xl text-slate-900 dark:text-white"
+                className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-[#202020] dark:text-white font-medium focus:outline-none"
               >
-                <option value="light">Light Theme (Default)</option>
-                <option value="dark">Dark Theme</option>
+                <option value="light">Light Theme (Warm Ivory)</option>
+                <option value="dark">Dark Theme (Deep Slate)</option>
                 <option value="system">Follow System Preference</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Date Format
               </label>
               <select
                 value={dateFormat}
                 onChange={(e) => setDateFormat(e.target.value as any)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-xl text-slate-900 dark:text-white"
+                className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-[#202020] dark:text-white font-medium focus:outline-none"
               >
                 <option value="DD/MM/YYYY">DD/MM/YYYY (Indian Standard)</option>
                 <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
@@ -596,7 +601,7 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
               Custom AI Backend URL (Optional)
             </label>
             <input
@@ -604,9 +609,9 @@ export const SettingsPage: React.FC = () => {
               placeholder="e.g. https://my-finance-ai.run.app (Leave empty to use current host)"
               value={aiBackendUrl}
               onChange={(e) => setAiBackendUrl(e.target.value)}
-              className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400"
+              className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs text-[#202020] dark:text-white placeholder-slate-400 focus:outline-none"
             />
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-[11px] text-[#626262] dark:text-slate-400">
               Useful when the frontend is hosted statically on GitHub Pages and calls an external Cloud Run backend.
             </p>
           </div>
@@ -614,7 +619,7 @@ export const SettingsPage: React.FC = () => {
           <div className="pt-2 flex justify-end">
             <button
               type="submit"
-              className="py-2 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm shadow-xs transition-all active:scale-95 cursor-pointer"
+              className="py-2.5 px-6 rounded-xl bg-[#FFDB8A] hover:bg-[#FCD276] text-[#202020] font-bold text-xs sm:text-sm border-2 border-[#202020] shadow-[2px_2px_0px_#202020] transition-all active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
             >
               Save Preferences
             </button>
@@ -623,42 +628,42 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* 2. Custom Categories Manager */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#1E1E22] border-2 border-[#202020] shadow-[3px_3px_0px_#202020] space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-[#202020]/10">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-serif font-bold text-[#202020] dark:text-white">
               Category Customization
             </h2>
-            <p className="text-xs text-slate-400">Add, edit, or color-code your financial buckets</p>
+            <p className="text-xs text-[#626262] dark:text-slate-400 font-medium">Add, edit, or color-code your financial buckets</p>
           </div>
           <button
             type="button"
             onClick={() => handleOpenCatModal()}
-            className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer"
+            className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] text-xs font-bold border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Category</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {categories.map((cat) => (
             <div
               key={cat.id}
-              className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between group"
+              className="p-3 rounded-2xl border-2 border-[#202020] bg-[#FBF9F2] dark:bg-[#141416] shadow-[1.5px_1.5px_0px_#202020] flex items-center justify-between group"
             >
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-[#202020] border border-[#202020] flex-shrink-0"
                   style={{ backgroundColor: cat.color }}
                 >
-                  <IconRenderer name={cat.icon} className="w-3.5 h-3.5" />
+                  <IconRenderer name={cat.icon} className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 truncate block">
+                  <span className="font-bold text-xs text-[#202020] dark:text-white truncate block">
                     {cat.name}
                   </span>
-                  <span className="text-[10px] text-slate-400 capitalize">{cat.type}</span>
+                  <span className="text-[10px] text-[#626262] dark:text-slate-400 capitalize font-medium">{cat.type}</span>
                 </div>
               </div>
 
@@ -667,14 +672,14 @@ export const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleOpenCatModal(cat)}
-                    className="p-1 text-slate-400 hover:text-slate-700"
+                    className="p-1 text-[#626262] hover:text-[#202020] dark:hover:text-white"
                   >
                     <Edit2 className="w-3 h-3" />
                   </button>
                   <button
                     type="button"
                     onClick={() => deleteCategory(cat.id)}
-                    className="p-1 text-slate-400 hover:text-rose-600"
+                    className="p-1 text-[#626262] hover:text-rose-600"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
@@ -686,37 +691,37 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* 3. Data Backup, Export & Restore */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="pb-3 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Database className="w-4 h-4 text-emerald-600" />
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#1E1E22] border-2 border-[#202020] shadow-[3px_3px_0px_#202020] space-y-4">
+        <div className="pb-3 border-b-2 border-[#202020]/10">
+          <h2 className="text-lg font-serif font-bold text-[#202020] dark:text-white flex items-center gap-2">
+            <Database className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
             <span>Data Portability & Complete Backup</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#626262] dark:text-slate-400 mt-0.5 font-medium">
             100% of your data belongs to you. Export full JSON snapshots or import existing bank CSV files.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* JSON Backup & Restore */}
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
-            <span className="font-bold text-xs uppercase text-slate-600 dark:text-slate-300 block">
+          <div className="p-5 rounded-2xl bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] space-y-3">
+            <span className="font-serif font-bold text-sm text-[#202020] dark:text-white block">
               Complete App Backup (JSON)
             </span>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#626262] dark:text-slate-400">
               Export all accounts, transactions, recurring rules, budgets, goals, and categories in one portable file.
             </p>
             <div className="flex items-center gap-2 pt-1">
               <button
                 type="button"
                 onClick={handleExportJSON}
-                className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs active:scale-95 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-[#FFDB8A] hover:bg-[#FCD276] text-[#202020] font-bold text-xs border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Export JSON</span>
               </button>
 
-              <label className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-semibold text-xs cursor-pointer active:scale-95 transition-all">
+              <label className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-white dark:bg-[#1E1E22] hover:bg-[#FBF9F2] text-[#202020] dark:text-white font-bold text-xs border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] cursor-pointer active:translate-x-[1px] active:translate-y-[1px] transition-all">
                 <Upload className="w-3.5 h-3.5" />
                 <span>Restore JSON</span>
                 <input
@@ -731,15 +736,15 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           {/* CSV Import */}
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
-            <span className="font-bold text-xs uppercase text-slate-600 dark:text-slate-300 block">
+          <div className="p-5 rounded-2xl bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] space-y-3">
+            <span className="font-serif font-bold text-sm text-[#202020] dark:text-white block">
               Import Transactions (CSV)
             </span>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#626262] dark:text-slate-400">
               Bulk import transactions from your bank statements or spreadsheet with preview and duplicate check.
             </p>
             <div className="pt-1">
-              <label className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer active:scale-95 transition-all">
+              <label className="inline-flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] font-bold text-xs border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] cursor-pointer active:translate-x-[1px] active:translate-y-[1px] transition-all">
                 <Upload className="w-3.5 h-3.5" />
                 <span>Upload CSV File</span>
                 <input
@@ -756,14 +761,14 @@ export const SettingsPage: React.FC = () => {
 
         {/* CSV Preview Drawer / Modal */}
         {csvPreviewRows && (
-          <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 space-y-3">
+          <div className="p-5 rounded-2xl bg-[#E5EAFB] dark:bg-[#1E1E2A] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                <span className="font-serif font-bold text-base text-[#202020] dark:text-white">
                   CSV Import Preview
                 </span>
-                <p className="text-xs text-slate-500">
-                  {csvStats?.valid} valid rows ready • {csvStats?.duplicateCount || 0} likely duplicates detected
+                <p className="text-xs text-[#626262] dark:text-slate-300 font-medium">
+                  {csvStats?.valid} valid rows ready • {csvStats?.duplicateCount || 0} duplicates detected
                 </p>
               </div>
 
@@ -771,7 +776,7 @@ export const SettingsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCsvPreviewRows(null)}
-                  className="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 text-xs font-semibold"
+                  className="px-3 py-1.5 rounded-xl text-[#626262] dark:text-slate-400 text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -779,25 +784,25 @@ export const SettingsPage: React.FC = () => {
                   type="button"
                   disabled={isImporting || csvStats?.valid === 0}
                   onClick={handleConfirmCSVImport}
-                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs disabled:opacity-40"
+                  className="px-4 py-2 rounded-xl bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] text-xs font-bold border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] disabled:opacity-40"
                 >
                   {isImporting ? 'Importing...' : `Import ${csvStats?.valid} Rows`}
                 </button>
               </div>
             </div>
 
-            <div className="max-h-48 overflow-y-auto divide-y divide-blue-200/50 dark:divide-blue-800/50 text-xs">
+            <div className="max-h-48 overflow-y-auto divide-y divide-[#202020]/10 text-xs">
               {csvPreviewRows.slice(0, 10).map((r, idx) => (
                 <div key={idx} className="py-2 flex items-center justify-between">
                   <div>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    <span className="font-bold text-[#202020] dark:text-slate-200">
                       {r.title}
                     </span>
-                    <span className="text-[10px] text-slate-400 block">
+                    <span className="text-[10px] text-[#626262] dark:text-slate-400 block">
                       {r.date} • {r.type} • {r.categoryName || 'General'}
                     </span>
                   </div>
-                  <span className="font-bold text-slate-900 dark:text-white">
+                  <span className="font-serif font-bold text-sm text-[#202020] dark:text-white">
                     {formatMoney(r.amount, currency)}
                   </span>
                 </div>
@@ -808,12 +813,12 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* 4. Demo Data & Clean Reset Controls */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="pb-3 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#1E1E22] border-2 border-[#202020] shadow-[3px_3px_0px_#202020] space-y-4">
+        <div className="pb-3 border-b-2 border-[#202020]/10">
+          <h2 className="text-lg font-serif font-bold text-[#202020] dark:text-white">
             Workspace Management
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#626262] dark:text-slate-400 font-medium">
             Switch between demo datasets and clean private production tracking
           </p>
         </div>
@@ -822,18 +827,18 @@ export const SettingsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setConfirmLoadDemoOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 active:scale-95 transition-all cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#E5EAFB] hover:bg-[#D5DDF8] text-xs font-bold text-[#202020] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
           >
-            <RefreshCw className="w-4 h-4 text-emerald-500" />
+            <RefreshCw className="w-4 h-4 text-blue-700" />
             <span>Load / Reset Demo Workspace</span>
           </button>
 
           <button
             type="button"
             onClick={() => setConfirmCleanOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 border border-rose-200 dark:border-rose-900 text-xs font-semibold text-rose-700 dark:text-rose-300 active:scale-95 transition-all cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#FFAB83] hover:bg-[#F69C72] text-xs font-bold text-[#202020] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
           >
-            <Trash2 className="w-4 h-4 text-rose-500" />
+            <Trash2 className="w-4 h-4 text-rose-800" />
             <span>Reset to Clean Blank Workspace</span>
           </button>
         </div>
@@ -841,15 +846,15 @@ export const SettingsPage: React.FC = () => {
 
       {/* Category Modal */}
       {isCatModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl p-5 shadow-2xl border border-slate-200 dark:border-slate-800 my-auto">
-            <h3 className="font-bold text-base text-slate-900 dark:text-white mb-3">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-[#202020]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1E1E22] w-full max-w-sm rounded-3xl p-6 shadow-2xl border-2 border-[#202020] my-auto space-y-4">
+            <h3 className="font-serif font-bold text-lg text-[#202020] dark:text-white">
               {editingCat ? 'Edit Category' : 'New Custom Category'}
             </h3>
 
-            <form onSubmit={handleSaveCategory} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveCategory} className="space-y-4 text-xs">
               <div>
-                <label className="text-slate-400 uppercase font-semibold block mb-1">
+                <label className="text-[#626262] dark:text-slate-400 uppercase font-bold block mb-1">
                   Category Name
                 </label>
                 <input
@@ -858,20 +863,22 @@ export const SettingsPage: React.FC = () => {
                   placeholder="e.g. Pet Care, Books, Freelance"
                   value={catName}
                   onChange={(e) => setCatName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm"
+                  className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-sm font-medium focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 uppercase font-semibold block mb-1">
+                <label className="text-[#626262] dark:text-slate-400 uppercase font-bold block mb-1">
                   Type
                 </label>
-                <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                <div className="grid grid-cols-2 gap-1.5 bg-[#FBF9F2] dark:bg-[#141416] p-1 rounded-xl border-2 border-[#202020]">
                   <button
                     type="button"
                     onClick={() => setCatType('expense')}
-                    className={`py-1 rounded-md font-semibold ${
-                      catType === 'expense' ? 'bg-rose-500 text-white' : 'text-slate-600'
+                    className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                      catType === 'expense'
+                        ? 'bg-[#FFAB83] text-[#202020] border border-[#202020]'
+                        : 'text-[#626262]'
                     }`}
                   >
                     Expense
@@ -879,8 +886,10 @@ export const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setCatType('income')}
-                    className={`py-1 rounded-md font-semibold ${
-                      catType === 'income' ? 'bg-emerald-600 text-white' : 'text-slate-600'
+                    className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                      catType === 'income'
+                        ? 'bg-[#ADE0BB] text-[#202020] border border-[#202020]'
+                        : 'text-[#626262]'
                     }`}
                   >
                     Income
@@ -889,17 +898,17 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-slate-400 uppercase font-semibold block mb-1">
+                <label className="text-[#626262] dark:text-slate-400 uppercase font-bold block mb-1">
                   Color
                 </label>
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   {CATEGORY_COLORS.map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => setCatColor(c)}
-                      className={`w-6 h-6 rounded-full border-2 ${
-                        catColor === c ? 'border-slate-900 scale-110' : 'border-transparent'
+                      className={`w-7 h-7 rounded-xl border-2 ${
+                        catColor === c ? 'border-[#202020] scale-110 shadow-[1px_1px_0px_#202020]' : 'border-transparent'
                       }`}
                       style={{ backgroundColor: c }}
                     />
@@ -911,13 +920,13 @@ export const SettingsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCatModalOpen(false)}
-                  className="px-3 py-1.5 text-slate-500"
+                  className="px-3 py-2 text-[#626262] font-bold text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold"
+                  className="px-4 py-2 rounded-xl bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] font-bold text-xs border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] active:translate-x-[1px] active:translate-y-[1px]"
                 >
                   Save Category
                 </button>

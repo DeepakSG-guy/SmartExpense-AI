@@ -170,6 +170,33 @@ export class AIService {
     return data.reply;
   }
 
+  /** Flexible categorizeTransaction handling both (desc, categories) and (desc, amount, type, categories) */
+  async categorizeTransaction(
+    description: string,
+    categoriesOrAmount: Category[] | number,
+    type?: 'expense' | 'income',
+    categories?: Category[]
+  ): Promise<CategorizeResult | null> {
+    if (Array.isArray(categoriesOrAmount)) {
+      return this.suggestCategory(description, 0, 'expense', categoriesOrAmount);
+    }
+    return this.suggestCategory(
+      description,
+      categoriesOrAmount || 0,
+      type || 'expense',
+      categories || []
+    );
+  }
+
+  /** Alias for chatWithAssistant */
+  async chatWithAssistant(
+    query: string,
+    factualContext: Record<string, any>,
+    history: Array<{ role: 'user' | 'assistant'; content: string }> = []
+  ): Promise<string> {
+    return this.askFinancialChat(query, factualContext, history);
+  }
+
   /**
    * Scans a receipt image via Gemini multimodal.
    */

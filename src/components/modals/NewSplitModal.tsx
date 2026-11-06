@@ -228,23 +228,23 @@ export const NewSplitModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#202020]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="bg-white dark:bg-[#1E1E22] border-2 border-[#202020] shadow-[3.5px_3.5px_0px_#202020] rounded-3xl max-w-xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4.5 border-b-2 border-[#202020]/10 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-[#ADE0BB] border-2 border-[#202020] text-[#202020] flex items-center justify-center font-bold shadow-[1.5px_1.5px_0px_#202020]">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base">
+              <h3 className="font-serif font-bold text-[#202020] dark:text-white text-lg">
                 New Group Expense Split
               </h3>
-              <p className="text-xs text-slate-400">
-                Split shared student food, rent, Wi-Fi, or travel with zero paise loss
+              <p className="text-xs text-[#626262] dark:text-slate-400 font-medium">
+                Split student food, rent, Wi-Fi, or travel with zero paise loss
               </p>
             </div>
           </div>
@@ -252,7 +252,7 @@ export const NewSplitModal: React.FC = () => {
           <button
             type="button"
             onClick={closeNewSplitModal}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl border border-[#202020]/20 hover:border-[#202020] text-[#202020] dark:text-white cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -262,8 +262,8 @@ export const NewSplitModal: React.FC = () => {
         <div className="p-6 max-h-[80vh] overflow-y-auto space-y-5">
           {/* Student Quick Presets */}
           <div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#626262] dark:text-slate-300 uppercase tracking-wider mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-current" />
               <span>Student & Roommate Presets</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -272,12 +272,12 @@ export const NewSplitModal: React.FC = () => {
                   key={p.id}
                   type="button"
                   onClick={() => handleApplyPreset(p)}
-                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500/80 bg-slate-50/50 dark:bg-slate-800/40 text-left transition-all active:scale-95 group"
+                  className="p-2.5 rounded-xl border-2 border-[#202020] bg-[#FBF9F2] dark:bg-[#141416] shadow-[1.5px_1.5px_0px_#202020] hover:bg-[#FFDB8A]/30 text-left transition-all active:translate-x-[1px] active:translate-y-[1px] group cursor-pointer"
                 >
-                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">
+                  <div className="text-xs font-bold text-[#202020] dark:text-white truncate">
                     {p.label}
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                  <div className="text-[10px] text-[#626262] dark:text-slate-400 truncate mt-0.5">
                     {p.defaultTitle}
                   </div>
                 </button>
@@ -286,8 +286,8 @@ export const NewSplitModal: React.FC = () => {
           </div>
 
           {errorMessage && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-500" />
+            <div className="p-3.5 rounded-2xl bg-[#FFAB83]/20 border-2 border-[#202020] text-xs font-medium text-[#202020] dark:text-white flex items-start gap-2.5 shadow-[1.5px_1.5px_0px_#202020]">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -296,7 +296,7 @@ export const NewSplitModal: React.FC = () => {
             {/* Title & Amount */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Expense Description *
                 </label>
                 <input
@@ -305,16 +305,16 @@ export const NewSplitModal: React.FC = () => {
                   placeholder="e.g. Swiggy Dinner Feast"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-sm font-medium text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Total (₹ INR) *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-serif font-bold text-[#202020]">
                     ₹
                   </span>
                   <input
@@ -325,7 +325,7 @@ export const NewSplitModal: React.FC = () => {
                     placeholder="0.00"
                     value={totalAmountMajor}
                     onChange={(e) => setTotalAmountMajor(e.target.value)}
-                    className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full pl-8 pr-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-base font-serif font-bold text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none"
                   />
                 </div>
               </div>
@@ -334,13 +334,13 @@ export const NewSplitModal: React.FC = () => {
             {/* Payer and Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Who Paid Upfront? *
                 </label>
                 <select
                   value={payerId}
                   onChange={(e) => setPayerId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs sm:text-sm font-bold text-[#202020] dark:text-white focus:outline-none"
                 >
                   {splitParticipants.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -351,16 +351,16 @@ export const NewSplitModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Date
                 </label>
                 <div className="relative">
-                  <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Calendar className="w-4 h-4 text-[#626262] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs sm:text-sm font-medium text-[#202020] dark:text-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -369,13 +369,13 @@ export const NewSplitModal: React.FC = () => {
             {/* Category & Linked Account */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Category
                 </label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs sm:text-sm font-medium text-[#202020] dark:text-white focus:outline-none"
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -386,13 +386,13 @@ export const NewSplitModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Debit Account (Optional)
                 </label>
                 <select
                   value={linkedAccountId}
                   onChange={(e) => setLinkedAccountId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs sm:text-sm font-medium text-[#202020] dark:text-white focus:outline-none"
                 >
                   <option value="">None (Split only, no ledger entry)</option>
                   {accounts.map((a) => (
@@ -406,17 +406,17 @@ export const NewSplitModal: React.FC = () => {
 
             {/* Split Method Tabs */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Split Method
               </label>
-              <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+              <div className="grid grid-cols-3 gap-2 p-1.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-2xl">
                 <button
                   type="button"
                   onClick={() => setSplitMethod('equal')}
-                  className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     splitMethod === 'equal'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
+                      : 'text-[#626262] dark:text-slate-400'
                   }`}
                 >
                   <Divide className="w-3.5 h-3.5" />
@@ -425,10 +425,10 @@ export const NewSplitModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSplitMethod('percentage')}
-                  className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     splitMethod === 'percentage'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-[#CFB0E8] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
+                      : 'text-[#626262] dark:text-slate-400'
                   }`}
                 >
                   <Percent className="w-3.5 h-3.5" />
@@ -437,14 +437,14 @@ export const NewSplitModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSplitMethod('custom')}
-                  className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     splitMethod === 'custom'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-[#ADE0BB] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
+                      : 'text-[#626262] dark:text-slate-400'
                   }`}
                 >
                   <Coins className="w-3.5 h-3.5" />
-                  <span>Exact Amounts (₹)</span>
+                  <span>Exact (₹)</span>
                 </button>
               </div>
             </div>
@@ -452,13 +452,13 @@ export const NewSplitModal: React.FC = () => {
             {/* Participants Selector & Split Distribution */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                <label className="text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider">
                   Participants ({selectedParticipantIds.length} selected)
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsAddingQuickFriend(!isAddingQuickFriend)}
-                  className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-[#202020] dark:text-[#ADE0BB] hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Friend</span>
@@ -467,8 +467,8 @@ export const NewSplitModal: React.FC = () => {
 
               {/* Inline quick friend creator */}
               {isAddingQuickFriend && (
-                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
-                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                <div className="p-3.5 rounded-2xl bg-[#E5EAFB] dark:bg-[#1E1E2A] border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] space-y-2">
+                  <div className="text-xs font-bold text-[#202020] dark:text-white">
                     Add Roommate / Friend
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -477,28 +477,28 @@ export const NewSplitModal: React.FC = () => {
                       placeholder="Name (e.g. Rahul)"
                       value={quickFriendName}
                       onChange={(e) => setQuickFriendName(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg border text-xs bg-white dark:bg-slate-900"
+                      className="px-3 py-1.5 rounded-xl border-2 border-[#202020] text-xs bg-white dark:bg-[#1E1E22] focus:outline-none"
                     />
                     <input
                       type="text"
                       placeholder="UPI ID (optional)"
                       value={quickFriendUpi}
                       onChange={(e) => setQuickFriendUpi(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg border text-xs bg-white dark:bg-slate-900"
+                      className="px-3 py-1.5 rounded-xl border-2 border-[#202020] text-xs bg-white dark:bg-[#1E1E22] focus:outline-none"
                     />
                   </div>
                   <div className="flex justify-end gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setIsAddingQuickFriend(false)}
-                      className="px-2.5 py-1 text-xs text-slate-500"
+                      className="px-2.5 py-1 text-xs font-bold text-[#626262]"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       onClick={handleQuickAddFriend}
-                      className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-semibold"
+                      className="px-3 py-1 bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] border-2 border-[#202020] rounded-xl text-xs font-bold shadow-[1px_1px_0px_#202020]"
                     >
                       Add & Select
                     </button>
@@ -507,7 +507,7 @@ export const NewSplitModal: React.FC = () => {
               )}
 
               {/* Participant List */}
-              <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+              <div className="divide-y-2 divide-[#202020]/10 border-2 border-[#202020] rounded-2xl overflow-hidden shadow-[1.5px_1.5px_0px_#202020]">
                 {splitParticipants.map((part) => {
                   const isSelected = selectedParticipantIds.includes(part.id);
                   const equalShare = equalSplitShares.find((s) => s.participantId === part.id);
@@ -517,8 +517,8 @@ export const NewSplitModal: React.FC = () => {
                       key={part.id}
                       className={`p-3 flex items-center justify-between gap-3 transition-colors ${
                         isSelected
-                          ? 'bg-white dark:bg-slate-800/90'
-                          : 'bg-slate-50/60 dark:bg-slate-900/60 opacity-60'
+                          ? 'bg-white dark:bg-[#1E1E22]'
+                          : 'bg-[#FBF9F2]/50 dark:bg-[#141416]/50 opacity-60'
                       }`}
                     >
                       <div
@@ -526,31 +526,31 @@ export const NewSplitModal: React.FC = () => {
                         onClick={() => toggleParticipant(part.id)}
                       >
                         <div
-                          className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
+                          className={`w-5 h-5 rounded-md flex items-center justify-center border-2 border-[#202020] transition-all ${
                             isSelected
-                              ? 'bg-emerald-600 border-emerald-600 text-white'
-                              : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
+                              ? 'bg-[#ADE0BB] text-[#202020]'
+                              : 'bg-white dark:bg-[#141416]'
                           }`}
                         >
                           {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                         </div>
 
                         <div className="min-w-0">
-                          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 truncate">
+                          <div className="text-xs font-bold text-[#202020] dark:text-white flex items-center gap-1.5 truncate">
                             <span>{part.name}</span>
                             {part.isCurrentUser && (
-                              <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded font-normal">
+                              <span className="text-[10px] bg-[#E5EAFB] border border-[#202020] text-[#202020] px-1.5 py-0.2 rounded-md font-bold">
                                 You
                               </span>
                             )}
                             {part.id === payerId && (
-                              <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.2 rounded font-semibold">
+                              <span className="text-[10px] bg-[#FFDB8A] border border-[#202020] text-[#202020] px-1.5 py-0.2 rounded-md font-bold">
                                 Payer
                               </span>
                             )}
                           </div>
                           {part.upiId && (
-                            <div className="text-[10px] text-slate-400 font-mono truncate">
+                            <div className="text-[10px] text-[#626262] dark:text-slate-400 font-mono truncate">
                               UPI: {part.upiId}
                             </div>
                           )}
@@ -561,7 +561,7 @@ export const NewSplitModal: React.FC = () => {
                       {isSelected && (
                         <div className="flex-shrink-0 text-right">
                           {splitMethod === 'equal' && (
-                            <div className="font-bold text-xs text-slate-900 dark:text-white">
+                            <div className="font-serif font-bold text-sm text-[#202020] dark:text-white">
                               {equalShare ? formatMoney(equalShare.amount, currency) : '₹0.00'}
                             </div>
                           )}
@@ -578,15 +578,15 @@ export const NewSplitModal: React.FC = () => {
                                 onChange={(e) =>
                                   setPercentages({ ...percentages, [part.id]: e.target.value })
                                 }
-                                className="w-16 px-2 py-1 text-xs text-right font-bold bg-slate-100 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600"
+                                className="w-16 px-2 py-1 text-xs text-right font-bold bg-[#FBF9F2] dark:bg-[#141416] rounded-xl border-2 border-[#202020] focus:outline-none"
                               />
-                              <span className="text-xs font-bold text-slate-400">%</span>
+                              <span className="text-xs font-bold text-[#626262]">%</span>
                             </div>
                           )}
 
                           {splitMethod === 'custom' && (
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-400">₹</span>
+                              <span className="text-xs font-serif font-bold text-[#202020]">₹</span>
                               <input
                                 type="number"
                                 step="0.01"
@@ -596,7 +596,7 @@ export const NewSplitModal: React.FC = () => {
                                 onChange={(e) =>
                                   setCustomAmounts({ ...customAmounts, [part.id]: e.target.value })
                                 }
-                                className="w-24 px-2 py-1 text-xs text-right font-bold bg-slate-100 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600"
+                                className="w-24 px-2 py-1 text-xs text-right font-serif font-bold bg-[#FBF9F2] dark:bg-[#141416] rounded-xl border-2 border-[#202020] focus:outline-none"
                               />
                             </div>
                           )}
@@ -610,27 +610,27 @@ export const NewSplitModal: React.FC = () => {
               {/* Split method balance indicator */}
               {splitMethod === 'percentage' && (
                 <div
-                  className={`text-xs flex items-center justify-between p-2 rounded-xl ${
+                  className={`text-xs flex items-center justify-between p-2.5 rounded-xl border-2 border-[#202020] font-bold ${
                     Math.abs(currentTotalPercentage - 100) < 0.05
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
+                      ? 'bg-[#ADE0BB] text-[#202020]'
+                      : 'bg-[#FFAB83] text-[#202020]'
                   }`}
                 >
                   <span>Total Percentage Allocated:</span>
-                  <span className="font-bold">{currentTotalPercentage.toFixed(1)}% / 100%</span>
+                  <span>{currentTotalPercentage.toFixed(1)}% / 100%</span>
                 </div>
               )}
 
               {splitMethod === 'custom' && (
                 <div
-                  className={`text-xs flex items-center justify-between p-2 rounded-xl ${
+                  className={`text-xs flex items-center justify-between p-2.5 rounded-xl border-2 border-[#202020] font-bold ${
                     totalAmountMinor === currentCustomSumMinor && totalAmountMinor > 0
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
+                      ? 'bg-[#ADE0BB] text-[#202020]'
+                      : 'bg-[#FFAB83] text-[#202020]'
                   }`}
                 >
-                  <span>Custom Allocated vs Total:</span>
-                  <span className="font-bold">
+                  <span>Custom vs Total:</span>
+                  <span className="font-serif">
                     {formatMoney(currentCustomSumMinor, currency)} / {formatMoney(totalAmountMinor, currency)}
                   </span>
                 </div>
@@ -639,7 +639,7 @@ export const NewSplitModal: React.FC = () => {
 
             {/* Notes */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Notes / Settlement Link (Optional)
               </label>
               <input
@@ -647,7 +647,7 @@ export const NewSplitModal: React.FC = () => {
                 placeholder="e.g. Swiggy Order #89211 • Split between flatmates"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
+                className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs font-medium text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none"
               />
             </div>
 
@@ -656,7 +656,7 @@ export const NewSplitModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#FFDB8A] hover:bg-[#FCD276] text-[#202020] font-bold text-sm border-2 border-[#202020] shadow-[2.5px_2.5px_0px_#202020] transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 cursor-pointer"
               >
                 <span>{isSubmitting ? 'Creating Group Split...' : 'Create Group Split'}</span>
                 <ArrowRight className="w-4 h-4" />

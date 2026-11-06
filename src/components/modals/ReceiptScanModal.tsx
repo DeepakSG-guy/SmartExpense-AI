@@ -7,7 +7,7 @@ import { X, Camera, Upload, Sparkles, Check, AlertCircle, FileText } from 'lucid
 interface ReceiptScanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPopulateTransaction: (data: {
+  onPopulateTransaction?: (data: {
     title: string;
     amount: number;
     date: string;
@@ -84,46 +84,48 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
       ? `Items: ${scanResult.lineItems.map((i) => `${i.name} (${currencyConfig.symbol}${i.price})`).join(', ')}`
       : '';
 
-    onPopulateTransaction({
-      title: scanResult.merchant || 'Scanned Receipt',
-      amount: toMinorUnits(scanResult.amount || 0, currencyConfig.minorUnitDigits),
-      date: scanResult.date || new Date().toISOString().split('T')[0],
-      categoryId: matchedCatId,
-      notes: itemsSummary,
-    });
+    if (onPopulateTransaction) {
+      onPopulateTransaction({
+        title: scanResult.merchant || 'Scanned Receipt',
+        amount: toMinorUnits(scanResult.amount || 0, currencyConfig.minorUnitDigits),
+        date: scanResult.date || new Date().toISOString().split('T')[0],
+        categoryId: matchedCatId,
+        notes: itemsSummary,
+      });
+    }
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#202020]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white dark:bg-[#1E1E22] w-full max-w-lg rounded-3xl shadow-2xl border-2 border-[#202020] shadow-[3.5px_3.5px_0px_#202020] overflow-hidden my-auto">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+        <div className="px-6 py-4 border-b-2 border-[#202020]/10 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#CFB0E8] border-2 border-[#202020] text-[#202020] flex items-center justify-center shadow-[1.5px_1.5px_0px_#202020]">
               <Camera className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-serif font-bold text-[#202020] dark:text-white">
                 AI Receipt Scanner
               </h2>
-              <p className="text-xs text-slate-500">Extract merchant, total, date & items</p>
+              <p className="text-xs text-[#626262] dark:text-slate-400 font-medium">Extract merchant, total, date & items</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="p-1.5 rounded-xl border border-[#202020]/20 hover:border-[#202020] text-[#202020] dark:text-white"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="p-6 space-y-4">
           {/* AI Status notice */}
           {!aiHealth.hasGeminiKey && (
-            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-2xl bg-[#FFDB8A]/30 border-2 border-[#202020] text-[#202020] dark:text-slate-200 text-xs flex items-start gap-2.5 shadow-[1.5px_1.5px_0px_#202020]">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-700" />
               <span>
                 Gemini AI backend is not active. You can still preview your receipt image and enter details manually in the transaction ledger.
               </span>
@@ -131,21 +133,21 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
           )}
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs border border-rose-200 dark:border-rose-900">
+            <div className="p-3.5 rounded-2xl bg-[#FFAB83]/20 border-2 border-[#202020] text-[#202020] dark:text-white text-xs font-medium shadow-[1.5px_1.5px_0px_#202020]">
               {errorMsg}
             </div>
           )}
 
           {/* Upload Area */}
           {!imagePreview ? (
-            <label className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-500 transition-colors bg-slate-50/50 dark:bg-slate-800/30">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
+            <label className="border-2 border-dashed border-[#202020] rounded-3xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#FBF9F2] dark:hover:bg-[#141416] transition-colors bg-[#FBF9F2]/60 dark:bg-[#141416]/40">
+              <div className="w-14 h-14 rounded-2xl bg-[#FFDB8A] border-2 border-[#202020] text-[#202020] flex items-center justify-center mb-3 shadow-[2px_2px_0px_#202020]">
                 <Upload className="w-6 h-6" />
               </div>
-              <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              <span className="text-sm font-serif font-bold text-[#202020] dark:text-white">
                 Click or drop receipt photo
               </span>
-              <span className="text-xs text-slate-400 mt-1">Supports JPEG, PNG, WebP (up to 10MB)</span>
+              <span className="text-xs text-[#626262] dark:text-slate-400 mt-1 font-medium">Supports JPEG, PNG, WebP (up to 10MB)</span>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -155,7 +157,7 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
             </label>
           ) : (
             <div className="space-y-3">
-              <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 max-h-56 flex items-center justify-center bg-slate-950">
+              <div className="relative rounded-2xl overflow-hidden border-2 border-[#202020] shadow-[2px_2px_0px_#202020] max-h-56 flex items-center justify-center bg-black">
                 <img
                   src={imagePreview}
                   alt="Receipt Preview"
@@ -167,7 +169,7 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
                     setImagePreview(null);
                     setScanResult(null);
                   }}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-900/80 text-white hover:bg-slate-900"
+                  className="absolute top-2 right-2 p-1.5 rounded-xl bg-white text-[#202020] border-2 border-[#202020] shadow-[1px_1px_0px_#202020]"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -178,10 +180,10 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
                   type="button"
                   disabled={isScanning || !aiHealth.hasGeminiKey}
                   onClick={handleScan}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm shadow-sm transition-all disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#CFB0E8] hover:bg-[#BFA0D8] text-[#202020] font-bold text-sm border-2 border-[#202020] shadow-[2px_2px_0px_#202020] transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  {isScanning ? 'Analyzing with Gemini...' : 'Analyze Receipt with Gemini'}
+                  <Sparkles className="w-4 h-4 fill-current" />
+                  <span>{isScanning ? 'Analyzing with Gemini...' : 'Analyze Receipt with Gemini'}</span>
                 </button>
               )}
             </div>
@@ -189,47 +191,47 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
 
           {/* Extracted Details Review */}
           {scanResult && (
-            <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 space-y-2.5 text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-emerald-200/50 dark:border-emerald-800/50">
-                <span className="font-bold text-slate-900 dark:text-white text-sm">
+            <div className="p-5 rounded-2xl bg-[#ADE0BB]/30 dark:bg-[#ADE0BB]/10 border-2 border-[#202020] shadow-[2px_2px_0px_#202020] space-y-3 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b-2 border-[#202020]/10">
+                <span className="font-serif font-bold text-[#202020] dark:text-white text-base">
                   Extracted Details (Review)
                 </span>
-                <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50">
+                <span className="text-[11px] font-bold text-[#202020] px-2 py-0.5 rounded-lg bg-[#ADE0BB] border border-[#202020]">
                   Ready to confirm
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-slate-700 dark:text-slate-300">
+              <div className="grid grid-cols-2 gap-3 text-[#202020] dark:text-slate-200">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase">Merchant</span>
-                  <span className="font-semibold text-sm">{scanResult.merchant || 'Unknown'}</span>
+                  <span className="text-[#626262] dark:text-slate-400 block text-[10px] font-bold uppercase">Merchant</span>
+                  <span className="font-bold text-sm">{scanResult.merchant || 'Unknown'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase">Amount</span>
-                  <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                  <span className="text-[#626262] dark:text-slate-400 block text-[10px] font-bold uppercase">Amount</span>
+                  <span className="font-serif font-bold text-base text-emerald-800 dark:text-emerald-300">
                     {currencyConfig.symbol}{scanResult.amount?.toFixed(2) || '0.00'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase">Date</span>
-                  <span>{scanResult.date || 'Today'}</span>
+                  <span className="text-[#626262] dark:text-slate-400 block text-[10px] font-bold uppercase">Date</span>
+                  <span className="font-semibold">{scanResult.date || 'Today'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase">Category</span>
-                  <span>{scanResult.category || 'General'}</span>
+                  <span className="text-[#626262] dark:text-slate-400 block text-[10px] font-bold uppercase">Category</span>
+                  <span className="font-semibold">{scanResult.category || 'General'}</span>
                 </div>
               </div>
 
               {scanResult.lineItems && scanResult.lineItems.length > 0 && (
-                <div className="pt-2 border-t border-emerald-200/40 dark:border-emerald-800/40">
-                  <span className="text-slate-400 block text-[10px] uppercase mb-1">
+                <div className="pt-2 border-t-2 border-[#202020]/10">
+                  <span className="text-[#626262] dark:text-slate-400 block text-[10px] font-bold uppercase mb-1">
                     Detected Items ({scanResult.lineItems.length})
                   </span>
                   <div className="max-h-24 overflow-y-auto space-y-1">
                     {scanResult.lineItems.map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-[11px]">
+                      <div key={idx} className="flex justify-between text-[11px] font-medium">
                         <span className="truncate">{item.name}</span>
-                        <span className="font-mono">
+                        <span className="font-serif font-bold">
                           {currencyConfig.symbol}{item.price.toFixed(2)}
                         </span>
                       </div>
@@ -241,11 +243,11 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
           )}
 
           {/* Footer */}
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
+          <div className="pt-4 border-t-2 border-[#202020]/10 flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium"
+              className="px-4 py-2.5 rounded-xl text-[#626262] dark:text-slate-400 font-bold text-sm hover:text-[#202020] dark:hover:text-white cursor-pointer"
             >
               Cancel
             </button>
@@ -253,7 +255,7 @@ export const ReceiptScanModal: React.FC<ReceiptScanModalProps> = ({
               <button
                 type="button"
                 onClick={handleApplyToTransaction}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-all active:scale-95"
+                className="px-5 py-2.5 rounded-xl bg-[#FFDB8A] hover:bg-[#FCD276] text-[#202020] text-sm font-bold border-2 border-[#202020] shadow-[2px_2px_0px_#202020] transition-all active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
               >
                 Populate Transaction Form
               </button>

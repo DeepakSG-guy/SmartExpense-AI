@@ -106,22 +106,22 @@ export const SettleSplitModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#202020]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="bg-white dark:bg-[#1E1E22] border-2 border-[#202020] shadow-[3.5px_3.5px_0px_#202020] rounded-3xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4.5 border-b-2 border-[#202020]/10 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-[#ADE0BB] border-2 border-[#202020] text-[#202020] flex items-center justify-center font-bold shadow-[1.5px_1.5px_0px_#202020]">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base">
+              <h3 className="font-serif font-bold text-[#202020] dark:text-white text-lg">
                 Record Settlement
               </h3>
-              <p className="text-xs text-slate-400 truncate max-w-[220px]">
+              <p className="text-xs text-[#626262] dark:text-slate-400 font-medium truncate max-w-[220px]">
                 {activeSplit.title}
               </p>
             </div>
@@ -130,7 +130,7 @@ export const SettleSplitModal: React.FC = () => {
           <button
             type="button"
             onClick={closeSettleModal}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl border border-[#202020]/20 hover:border-[#202020] text-[#202020] dark:text-white cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -139,50 +139,50 @@ export const SettleSplitModal: React.FC = () => {
         {/* Form Body */}
         <div className="p-6 space-y-4">
           {/* Summary Box */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-2">
+          <div className="p-4 rounded-2xl bg-[#ADE0BB]/20 dark:bg-[#141416] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400">Participant:</span>
-              <span className="font-bold text-slate-900 dark:text-white">{participant.name}</span>
+              <span className="text-[#626262] dark:text-slate-400 font-bold uppercase text-[10px]">Participant:</span>
+              <span className="font-bold text-sm text-[#202020] dark:text-white">{participant.name}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400">Total Share:</span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
+              <span className="text-[#626262] dark:text-slate-400 font-bold uppercase text-[10px]">Total Share:</span>
+              <span className="font-serif font-bold text-sm text-[#202020] dark:text-slate-200">
                 {formatMoney(targetShare.amount, currency)}
               </span>
             </div>
             {targetShare.settledAmount > 0 && (
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500 dark:text-slate-400">Already Settled:</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                <span className="text-[#626262] dark:text-slate-400 font-bold uppercase text-[10px]">Already Settled:</span>
+                <span className="font-serif font-bold text-sm text-emerald-700 dark:text-emerald-400">
                   {formatMoney(targetShare.settledAmount, currency)}
                 </span>
               </div>
             )}
-            <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-800 dark:text-slate-200">Pending Balance:</span>
-              <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+            <div className="pt-2 border-t-2 border-[#202020]/10 flex items-center justify-between text-xs">
+              <span className="font-bold text-[#202020] dark:text-slate-200">Pending Balance:</span>
+              <span className="font-serif text-lg font-bold text-[#202020] dark:text-white">
                 {formatMoney(remainingMinor, currency)}
               </span>
             </div>
           </div>
 
           {errorMessage && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-500" />
+            <div className="p-3.5 rounded-2xl bg-[#FFAB83]/20 border-2 border-[#202020] text-xs font-medium text-[#202020] dark:text-white flex items-start gap-2.5 shadow-[1.5px_1.5px_0px_#202020]">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Settlement Type Toggle */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-2xl">
               <button
                 type="button"
                 onClick={() => setSettlementType('full')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all ${
                   settlementType === 'full'
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
-                    : 'text-slate-500'
+                    ? 'bg-[#FFDB8A] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
+                    : 'text-[#626262] dark:text-slate-400'
                 }`}
               >
                 Full Settle ({formatMoney(remainingMinor, currency)})
@@ -192,8 +192,8 @@ export const SettleSplitModal: React.FC = () => {
                 onClick={() => setSettlementType('partial')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all ${
                   settlementType === 'partial'
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
-                    : 'text-slate-500'
+                    ? 'bg-[#CFB0E8] text-[#202020] border border-[#202020] shadow-[1px_1px_0px_#202020]'
+                    : 'text-[#626262] dark:text-slate-400'
                 }`}
               >
                 Partial Amount
@@ -203,11 +203,11 @@ export const SettleSplitModal: React.FC = () => {
             {/* Amount input if partial */}
             {settlementType === 'partial' && (
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Amount Paying (₹ INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-serif font-bold text-[#202020]">
                     ₹
                   </span>
                   <input
@@ -218,7 +218,7 @@ export const SettleSplitModal: React.FC = () => {
                     required
                     value={partialAmountMajor}
                     onChange={(e) => setPartialAmountMajor(e.target.value)}
-                    className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full pl-8 pr-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-base font-serif font-bold text-[#202020] dark:text-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -226,7 +226,7 @@ export const SettleSplitModal: React.FC = () => {
 
             {/* Payment Method */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Payment Mode
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -239,10 +239,10 @@ export const SettleSplitModal: React.FC = () => {
                     key={m.id}
                     type="button"
                     onClick={() => setPaymentMode(m.id as PaymentMode)}
-                    className={`p-2.5 rounded-xl border text-center transition-all ${
+                    className={`p-2.5 rounded-xl border-2 transition-all cursor-pointer ${
                       paymentMode === m.id
-                        ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                        ? 'border-[#202020] bg-[#ADE0BB] text-[#202020] font-bold shadow-[1.5px_1.5px_0px_#202020]'
+                        : 'border-[#202020]/30 bg-[#FBF9F2] dark:bg-[#141416] text-[#626262] dark:text-slate-300 hover:border-[#202020]'
                     }`}
                   >
                     <m.icon className="w-4 h-4 mx-auto mb-1" />
@@ -254,23 +254,23 @@ export const SettleSplitModal: React.FC = () => {
 
             {/* Date */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Settlement Date
               </label>
               <div className="relative">
-                <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Calendar className="w-4 h-4 text-[#626262] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs sm:text-sm font-medium text-[#202020] dark:text-white focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Notes */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-[#626262] dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Notes (Optional)
               </label>
               <input
@@ -278,7 +278,7 @@ export const SettleSplitModal: React.FC = () => {
                 placeholder="e.g. Paid via PhonePe UPI"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
+                className="w-full px-3.5 py-2.5 bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] rounded-xl text-xs text-[#202020] dark:text-white placeholder-[#626262]/60 focus:outline-none"
               />
             </div>
 
@@ -287,7 +287,7 @@ export const SettleSplitModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || amountToSettleMinor <= 0}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#ADE0BB] hover:bg-[#9CD3AA] text-[#202020] font-bold text-sm border-2 border-[#202020] shadow-[2.5px_2.5px_0px_#202020] transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 cursor-pointer"
               >
                 <span>{isSubmitting ? 'Recording...' : `Confirm Settle of ${formatMoney(amountToSettleMinor, currency)}`}</span>
                 <ArrowRight className="w-4 h-4" />

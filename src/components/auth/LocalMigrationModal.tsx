@@ -5,12 +5,8 @@ import { cloudSyncService } from '../../services/cloudSyncService';
 import { db } from '../../db';
 import {
   CloudUpload,
-  Database,
-  ArrowRight,
   X,
-  CheckCircle2,
   AlertCircle,
-  HelpCircle,
 } from 'lucide-react';
 
 interface LocalMigrationModalProps {
@@ -85,18 +81,18 @@ export const LocalMigrationModal: React.FC<LocalMigrationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 my-auto space-y-5">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-[#FBF9F2] dark:bg-[#1E1E22] w-full max-w-lg rounded-3xl p-6 sm:p-7 shadow-[5px_5px_0px_#202020] border-2 border-[#202020] my-auto space-y-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-[#FFDB8A] border-2 border-[#202020] text-[#202020] flex items-center justify-center flex-shrink-0 shadow-[2px_2px_0px_#202020]">
               <CloudUpload className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-tight">
+              <h3 className="font-serif font-bold text-lg text-[#202020] dark:text-white leading-tight">
                 Migrate Local Data to Cloud?
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
                 Found {localCount} local financial records on this browser
               </p>
             </div>
@@ -104,24 +100,24 @@ export const LocalMigrationModal: React.FC<LocalMigrationModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="w-8 h-8 rounded-full border-2 border-[#202020] bg-white dark:bg-[#28282D] text-[#202020] dark:text-white flex items-center justify-center hover:bg-[#FFDB8A] transition-colors shadow-[1.5px_1.5px_0px_#202020] cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs border border-rose-200 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-500" />
+          <div className="p-3.5 rounded-2xl bg-[#FFAB83]/20 border-2 border-[#202020] text-xs font-bold text-[#202020] dark:text-white flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-600" />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        <div className="p-4.5 rounded-2xl bg-white dark:bg-[#28282D] border-2 border-[#202020] shadow-[2px_2px_0px_#202020] space-y-2.5 text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium">
           <p>
-            You are signed in as <strong>{user.email}</strong>. Would you like to upload your existing local IndexedDB accounts, categories, and transactions to your private Supabase PostgreSQL database?
+            You are signed in as <strong className="text-[#202020] dark:text-white">{user.email}</strong>. Would you like to upload your existing local IndexedDB accounts, categories, and transactions to your private Supabase PostgreSQL database?
           </p>
-          <ul className="list-disc pl-4 space-y-1 text-slate-500 dark:text-slate-400">
+          <ul className="list-disc pl-4 space-y-1 text-neutral-600 dark:text-neutral-400">
             <li>Records are protected with Row Level Security (RLS) linked to your user ID.</li>
             <li>No duplicate transactions will be created.</li>
             <li>You will be able to access your financial data on any device or browser.</li>
@@ -132,7 +128,7 @@ export const LocalMigrationModal: React.FC<LocalMigrationModalProps> = ({
           <button
             type="button"
             onClick={handleSkip}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 text-xs font-bold cursor-pointer"
           >
             Keep Local (Skip)
           </button>
@@ -140,7 +136,7 @@ export const LocalMigrationModal: React.FC<LocalMigrationModalProps> = ({
             type="button"
             disabled={isMigrating}
             onClick={handleMigrate}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-[#FFDB8A] hover:bg-[#FCD269] text-[#202020] font-bold text-xs border-2 border-[#202020] shadow-[2.5px_2.5px_0px_#202020] active:translate-x-0.5 active:translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
           >
             <CloudUpload className="w-4 h-4" />
             <span>{isMigrating ? 'Migrating to Cloud...' : 'Upload & Sync to Cloud'}</span>

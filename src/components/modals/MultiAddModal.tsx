@@ -95,43 +95,43 @@ export const MultiAddModal: React.FC<MultiAddModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto flex flex-col max-h-[90vh]">
-        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#202020]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white dark:bg-[#1E1E22] w-full max-w-3xl rounded-3xl shadow-2xl border-2 border-[#202020] shadow-[3.5px_3.5px_0px_#202020] overflow-hidden my-auto flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b-2 border-[#202020]/10 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#ADE0BB] border-2 border-[#202020] text-[#202020] flex items-center justify-center shadow-[1.5px_1.5px_0px_#202020]">
               <ListPlus className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-serif font-bold text-[#202020] dark:text-white">
                 Quick Multi-Add Ledger
               </h2>
-              <p className="text-xs text-slate-500">Record several expenses at once</p>
+              <p className="text-xs text-[#626262] dark:text-slate-400 font-medium">Record several transactions at once</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="p-1.5 rounded-xl border border-[#202020]/20 hover:border-[#202020] text-[#202020] dark:text-white"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-3">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs border border-rose-200 dark:border-rose-900">
+            <div className="p-3 rounded-2xl bg-[#FFAB83]/20 border-2 border-[#202020] text-[#202020] dark:text-white text-xs font-medium shadow-[1.5px_1.5px_0px_#202020]">
               {errorMsg}
             </div>
           )}
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {rows.map((row, idx) => (
               <div
                 key={row.id}
-                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs"
+                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3 rounded-2xl bg-[#FBF9F2] dark:bg-[#141416] border-2 border-[#202020] shadow-[1.5px_1.5px_0px_#202020] text-xs"
               >
-                <span className="hidden sm:inline-block font-mono text-slate-400 w-4 text-center">
+                <span className="hidden sm:inline-block font-mono font-bold text-[#626262] w-5 text-center">
                   {idx + 1}
                 </span>
 
@@ -139,7 +139,7 @@ export const MultiAddModal: React.FC<MultiAddModalProps> = ({ isOpen, onClose })
                   type="date"
                   value={row.date}
                   onChange={(e) => updateRow(row.id, 'date', e.target.value)}
-                  className="px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                  className="px-2.5 py-2 bg-white dark:bg-[#1E1E22] border-2 border-[#202020] rounded-xl text-xs font-medium focus:outline-none"
                 />
 
                 <input
@@ -147,12 +147,12 @@ export const MultiAddModal: React.FC<MultiAddModalProps> = ({ isOpen, onClose })
                   placeholder="Merchant / Item name"
                   value={row.title}
                   onChange={(e) => updateRow(row.id, 'title', e.target.value)}
-                  className="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                  className="flex-1 px-3 py-2 bg-white dark:bg-[#1E1E22] border-2 border-[#202020] rounded-xl text-xs font-medium focus:outline-none"
                 />
 
                 <div className="flex items-center gap-2">
                   <div className="relative w-28">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-semibold">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#202020] font-serif font-bold text-xs">
                       {currencyConfig.symbol}
                     </span>
                     <input
@@ -161,14 +161,14 @@ export const MultiAddModal: React.FC<MultiAddModalProps> = ({ isOpen, onClose })
                       placeholder="0.00"
                       value={row.amount}
                       onChange={(e) => updateRow(row.id, 'amount', e.target.value)}
-                      className="w-full pl-6 pr-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold"
+                      className="w-full pl-6 pr-2 py-2 bg-white dark:bg-[#1E1E22] border-2 border-[#202020] rounded-xl text-xs font-serif font-bold focus:outline-none"
                     />
                   </div>
 
                   <select
                     value={row.categoryId}
                     onChange={(e) => updateRow(row.id, 'categoryId', e.target.value)}
-                    className="w-32 px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                    className="w-32 px-2.5 py-2 bg-white dark:bg-[#1E1E22] border-2 border-[#202020] rounded-xl text-xs font-medium focus:outline-none"
                   >
                     {categories
                       .filter((c) => c.type === row.type)
@@ -182,7 +182,7 @@ export const MultiAddModal: React.FC<MultiAddModalProps> = ({ isOpen, onClose })
                   <select
                     value={row.fromAccountId}
                     onChange={(e) => updateRow(row.id, 'fromAccountId', e.target.value)}
-                    className="w-28 px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs truncate"
+                    className="w-28 px-2.5 py-2 bg-white dark:bg-[#1E1E22] border-2 border-[#202020] rounded-xl text-xs font-medium truncate focus:outline-none"
                   >
                     {accounts.map((a) => (
                       <option key={a.id} value={a.id}>
@@ -195,7 +195,7 @@ export const MultiAddModal: React.FC<MultiAddModalProps> = ({ isOpen, onClose })
                     type="button"
                     onClick={() => removeRow(row.id)}
                     disabled={rows.length <= 1}
-                    className="p-1.5 text-slate-400 hover:text-rose-500 disabled:opacity-30"
+                    className="p-1.5 text-[#626262] hover:text-rose-600 disabled:opacity-30 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -207,24 +207,24 @@ export const MultiAddModal: React.FC<MultiAddModalProps> = ({ isOpen, onClose })
           <button
             type="button"
             onClick={addRow}
-            className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline pt-1 cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#202020] dark:text-[#ADE0BB] hover:underline pt-1 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add another row</span>
           </button>
 
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
+          <div className="pt-4 border-t-2 border-[#202020]/10 flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium"
+              className="px-4 py-2.5 rounded-xl text-[#626262] dark:text-slate-400 font-bold text-sm hover:text-[#202020] dark:hover:text-white cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-all active:scale-95 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-[#FFDB8A] hover:bg-[#FCD276] text-[#202020] text-sm font-bold border-2 border-[#202020] shadow-[2px_2px_0px_#202020] transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? 'Saving Batch...' : 'Save All Transactions'}
             </button>

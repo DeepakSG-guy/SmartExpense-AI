@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { Zap, Sparkles, FolderPlus, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, FolderPlus, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 export const OnboardingModal: React.FC = () => {
   const { settings, loadDemo, resetWorkspace } = useFinance();
@@ -9,84 +9,80 @@ export const OnboardingModal: React.FC = () => {
   if (settings.hasCompletedOnboarding) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform transition-all p-6 sm:p-8">
-        {/* App Logo & Title */}
-        <div className="text-center mb-6">
-          <div className="inline-flex w-14 h-14 rounded-2xl bg-emerald-600 items-center justify-center text-white shadow-lg shadow-emerald-600/30 mb-3">
-            <Zap className="w-8 h-8 fill-current" />
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-[#FBF9F2] dark:bg-[#1E1E22] w-full max-w-lg rounded-3xl border-2 border-[#202020] shadow-[5px_5px_0px_#202020] overflow-hidden transform transition-all p-6 sm:p-8">
+        {/* Decorative Top Pill / Badge */}
+        <div className="flex items-center justify-center mb-5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CFB0E8] border-2 border-[#202020] text-xs font-bold text-[#1E1E1E] shadow-[2px_2px_0px_#202020]">
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span>Welcome to SmartExpense AI</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Welcome to SmartExpense AI
+        </div>
+
+        {/* Editorial Heading directly echoing the Dribbble screen */}
+        <div className="text-center mb-6">
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#202020] dark:text-white tracking-tight leading-tight">
+            Track Your Spending Effortlessly
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
-            Your private, modern personal finance operating system. Works offline with local IndexedDB persistence and server-side Gemini intelligence.
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-2.5 max-w-md mx-auto leading-relaxed">
+            Manage your finances using our intuitive interface and set financial goals to monitor your progress in real time.
           </p>
         </div>
 
-        {/* 2 Options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
-          {/* Option B: Explore Demo */}
+        {/* 2 Options Cards */}
+        <div className="space-y-3.5 my-6">
+          {/* Option A: Explore Demo */}
           <button
             type="button"
             onClick={loadDemo}
-            className="group relative p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 text-left hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            className="w-full group relative p-4.5 rounded-2xl border-2 border-[#202020] bg-[#FFDB8A] hover:bg-[#FCD269] text-left shadow-[3px_3px_0px_#202020] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1.5px_1.5px_0px_#202020] transition-all cursor-pointer flex items-center justify-between gap-4"
           >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
-                  <Sparkles className="w-5 h-5" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-7 h-7 rounded-xl bg-[#202020] text-white flex items-center justify-center shadow-xs">
+                  <Sparkles className="w-4 h-4 text-[#FFDB8A]" />
                 </span>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">
+                <span className="font-serif font-bold text-[#202020] text-base">
+                  Explore Demo Mode
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#202020] bg-white border border-[#202020] px-2 py-0.5 rounded-full">
                   Recommended
                 </span>
               </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                Explore Demo Mode
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                Pre-loaded with 35+ realistic Indian expense records, 5 accounts (HDFC, UPI, Cash, Cards), budgets, and savings goals.
+              <p className="text-xs text-[#202020]/80 leading-relaxed font-medium pl-9">
+                Preloaded with 35+ realistic Indian transactions, 5 accounts (HDFC, UPI, Cash), budgets, and savings goals.
               </p>
             </div>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform">
-              <span>Launch Demo Mode</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </div>
+            <ArrowRight className="w-5 h-5 text-[#202020] flex-shrink-0 group-hover:translate-x-1 transition-transform" />
           </button>
 
-          {/* Option A: Start Fresh */}
+          {/* Option B: Start Clean Slate */}
           <button
             type="button"
             onClick={resetWorkspace}
-            className="group relative p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/40 text-left hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            className="w-full group relative p-4.5 rounded-2xl border-2 border-[#202020] bg-white dark:bg-[#28282D] text-left shadow-[3px_3px_0px_#202020] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1.5px_1.5px_0px_#202020] transition-all cursor-pointer flex items-center justify-between gap-4"
           >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
-                  <FolderPlus className="w-5 h-5" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-7 h-7 rounded-xl bg-[#ADE0BB] border border-[#202020] text-[#202020] flex items-center justify-center">
+                  <FolderPlus className="w-4 h-4" />
                 </span>
-                <span className="text-[11px] font-semibold text-slate-500 px-2 py-0.5 rounded-full">
-                  Clean Slate
+                <span className="font-serif font-bold text-[#202020] dark:text-white text-base">
+                  Start Clean Slate
                 </span>
               </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                Start Fresh
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                Start with a clean personal workspace. Creates a primary bank account with ₹20,000 opening balance ready for your records.
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium pl-9">
+                Start with a pristine personal workspace. Creates a primary bank account with ₹20,000 opening balance ready for your records.
               </p>
             </div>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:translate-x-0.5 transition-transform">
-              <span>Start Blank Workspace</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </div>
+            <ArrowRight className="w-5 h-5 text-[#202020] dark:text-white flex-shrink-0 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
         {/* Security & Privacy note */}
-        <div className="flex items-center justify-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100 dark:border-slate-800">
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          <span>100% Client-Side Privacy: Your data is stored safely in your browser’s IndexedDB.</span>
+        <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 pt-3 border-t-2 border-[#202020]/15 dark:border-white/10">
+          <ShieldCheck className="w-4 h-4 text-[#202020] dark:text-[#ADE0BB]" />
+          <span>100% Client-Side Privacy: Stored locally in your browser’s IndexedDB.</span>
         </div>
       </div>
     </div>
